@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { deleteR2Object, uploadR2Object } from '@/lib/r2';
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -80,11 +81,11 @@ export async function submitSellerVerificationDocument(formData: FormData) {
   }
 
   const path = `${userId}/verification/${randomUUID()}.${types[file.type]}`;
-  const { error: uploadError } = await supabase.storage.from('seller-verification').upload(path, file, {
-    contentType: file.type,
-    upsert: false,
-  });
-  if (uploadError) redirect('/seller/verification?message=upload-failed');
+  try {
+    await uploadR2Object(path, file);
+  } catch {
+    redirect('/seller/verification?message=upload-failed');
+  }
 
   const { error: insertError } = await supabase.from('seller_verification_documents').insert({
     user_id: userId,
@@ -92,7 +93,7 @@ export async function submitSellerVerificationDocument(formData: FormData) {
     object_path: path,
   });
   if (insertError) {
-    await supabase.storage.from('seller-verification').remove([path]);
+    await deleteR2Object(path).catch(() => undefined);
     redirect('/seller/verification?message=save-failed');
   }
   revalidatePath('/seller/verification');
