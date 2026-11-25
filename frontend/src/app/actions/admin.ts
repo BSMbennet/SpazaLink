@@ -61,7 +61,7 @@ export async function submitSellerVerificationDocument(formData: FormData) {
 
   const [{ data: profile }, { data: request }] = await Promise.all([
     supabase.from('profiles').select('role').eq('id', userId).maybeSingle(),
-    supabase.from('role_requests').select('id').eq('user_id', userId).eq('requested_role', 'seller').limit(1).maybeSingle(),
+    supabase.from('role_requests').select('id').eq('user_id', userId).eq('requested_role', 'seller').in('status', ['pending','approved']).limit(1).maybeSingle(),
   ]);
   if (profile?.role !== 'seller' && !request) redirect('/dashboard');
 
