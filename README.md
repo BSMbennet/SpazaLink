@@ -6,7 +6,7 @@ South African neighbourhood marketplace pilot, starting in Thohoyandou, Limpopo.
 
 - `frontend/` — Next.js App Router PWA. Configure Vercel **Root Directory** as `frontend`.
 - `backend/` — Fastify TypeScript API. Deploy to Render from `backend/Dockerfile` or use the root `render.yaml` blueprint.
-- `supabase/migrations/` — versioned database migrations for the dedicated SpazaLink Supabase project.
+- `supabase/migrations/` — database migrations. Migrations 002–004 are mirrored here; migration 001 (the initial schema) is included in the complete project bundle but still needs to be committed here before this repository alone can restore a fresh database.
 
 ## Local development
 
