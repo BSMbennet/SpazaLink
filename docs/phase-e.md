@@ -3,7 +3,7 @@
 ## Delivered
 - Admin verification queue at `/admin`.
 - Review and approve/reject seller and agent role requests.
-- Seller-only private document upload at `/seller/verification` (PDF, JPEG, PNG, WebP; max 5 MB).
+- Seller-only private document upload at `/seller/verification` (PDF, JPEG, PNG, WebP; max 4 MB).
 - Private seller documents are visible to their owner and admins only; the admin page creates 60-second signed links.
 - Admin can approve/reject submitted documents and approve/reject/suspend shops.
 - Shop approval activates marketplace visibility and records reviewer, review time and verification time.
