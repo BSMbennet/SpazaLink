@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { requestWhatsAppOrderNotice } from '@/lib/whatsapp';
 
 const allowedActions = new Set(['accept', 'reject', 'ready', 'complete', 'confirm_cash', 'cancel']);
 
@@ -35,6 +36,11 @@ export async function sellerProcessOrder(formData: FormData): Promise<void> {
     redirect('/seller/orders?notice=' + message);
   }
 
+  const statusMessages: Record<string,string> = {
+    accept: 'Order accepted', reject: 'Order rejected', ready: 'Order ready for collection or delivery',
+    complete: 'Order completed', confirm_cash: 'Cash payment confirmed', cancel: 'Order cancelled',
+  };
+  await requestWhatsAppOrderNotice(supabase, orderId, statusMessages[action]);
   revalidatePath('/seller/orders');
   revalidatePath('/orders');
   revalidatePath('/orders/' + orderId);
