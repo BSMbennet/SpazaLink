@@ -3,13 +3,14 @@
 import { useState, useTransition, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { placeCashOrder } from '@/app/actions/orders';
+import { placeCashOrder, startPaystackOrder } from '@/app/actions/orders';
 import { useCart } from '@/components/cart-provider';
 
 export function CartClient() {
   const { items, itemCount, subtotal, setQuantity, removeItem, clear } = useCart();
   const router = useRouter();
   const [selectedFulfillment, setSelectedFulfillment] = useState<'collection' | 'seller_delivery' | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'paystack'>('cash');
   const [message, setMessage] = useState('');
   const [pending, startTransition] = useTransition();
   const shop = items[0];
@@ -35,9 +36,13 @@ export function CartClient() {
     formData.set('items', JSON.stringify(items.map(item => ({ product_id: item.product_id, quantity: item.quantity }))));
     startTransition(async () => {
       setMessage('');
-      const result = await placeCashOrder(formData);
+      const result = paymentMethod === 'cash' ? await placeCashOrder(formData) : await startPaystackOrder(formData);
       if (!result.ok) {
         setMessage(result.message);
+        return;
+      }
+      if ('checkoutUrl' in result) {
+        window.location.assign(result.checkoutUrl);
         return;
       }
       clear();
@@ -67,10 +72,11 @@ export function CartClient() {
         </fieldset>
         {fulfillment === 'seller_delivery' && <label>Delivery address<textarea name="deliveryAddress" required minLength={4} maxLength={300} rows={3} placeholder="Street, area and delivery instructions"/></label>}
         <label>Note to seller (optional)<textarea name="buyerNote" maxLength={500} rows={2} placeholder="Any useful order details"/></label>
-        <div className="checkout-totals"><div><span>Items subtotal</span><strong>R {subtotal.toFixed(2)}</strong></div><div><span>Delivery fee</span><strong>R {deliveryFee.toFixed(2)}</strong></div><div className="checkout-total"><span>Total due in cash</span><strong>R {total.toFixed(2)}</strong></div></div>
-        <p className="muted-small">This order is cash due. It is not marked as paid until the seller confirms receipt of cash.</p>
+        <fieldset><legend>Payment method</legend><label className="consent-row"><input type="radio" name="paymentMethod" checked={paymentMethod === 'cash'} onChange={() => setPaymentMethod('cash')}/> Cash on collection / delivery</label><label className="consent-row"><input type="radio" name="paymentMethod" checked={paymentMethod === 'paystack'} onChange={() => setPaymentMethod('paystack')}/> Pay online with Paystack</label></fieldset>
+        <div className="checkout-totals"><div><span>Items subtotal</span><strong>R {subtotal.toFixed(2)}</strong></div><div><span>Delivery fee</span><strong>R {deliveryFee.toFixed(2)}</strong></div><div className="checkout-total"><span>Total due</span><strong>R {total.toFixed(2)}</strong></div></div>
+        <p className="muted-small">{paymentMethod === 'cash' ? 'Cash is not marked as paid until the seller confirms receipt.' : 'You will be redirected to Paystack. Payment is confirmed only after server verification.'}</p>
         {message && <p className="notice" role="alert">{message}</p>}
-        <button className="button button-primary" type="submit" disabled={pending || !shop?.offers_collection && !shop?.offers_delivery}>{pending ? 'Placing order…' : 'Place cash order'}</button>
+        <button className="button button-primary" type="submit" disabled={pending || !shop?.offers_collection && !shop?.offers_delivery}>{pending ? 'Starting checkout…' : paymentMethod === 'cash' ? 'Place cash order' : 'Continue to Paystack'}</button>
       </form>
     </section>
   </div>;
