@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useTransition, type FormEvent } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { placeCashOrder } from '@/app/actions/orders';
 import { useCart } from '@/components/cart-provider';
@@ -42,7 +43,7 @@ export function CartClient() {
   }
 
   if (!ready) return <p className="empty-state">Loading your cart…</p>;
-  if (!items.length) return <div className="empty-state"><h2>Your cart is empty.</h2><p>Find products from a local shop and add them here.</p><a className="button button-primary" href="/marketplace">Browse the marketplace</a></div>;
+  if (!items.length) return <div className="empty-state"><h2>Your cart is empty.</h2><p>Find products from a local shop and add them here.</p><Link className="button button-primary" href="/marketplace">Browse the marketplace</Link></div>;
 
   return <div className="cart-layout">
     <section className="cart-lines">
