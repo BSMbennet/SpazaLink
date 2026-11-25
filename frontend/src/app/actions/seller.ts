@@ -84,6 +84,30 @@ export async function addProduct(formData: FormData) {
   message('/seller/products', 'Product added to your catalogue.');
 }
 
+
+export async function updateProduct(formData: FormData) {
+  const { supabase, shop } = await sellerContext();
+  if (!shop) redirect('/seller/shop');
+  const productId = String(formData.get('productId') ?? '');
+  const name = String(formData.get('name') ?? '').trim();
+  const description = String(formData.get('description') ?? '').trim();
+  const rawPrice = String(formData.get('price') ?? '').trim();
+  const rawStock = String(formData.get('stockQuantity') ?? '').trim();
+  const price = Number(rawPrice);
+  const stockQuantity = Number(rawStock);
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(productId) ||
+      name.length < 2 || name.length > 120 || description.length > 500 ||
+      rawPrice === '' || !Number.isFinite(price) || price < 0 || price > 99999999.99 ||
+      rawStock === '' || !Number.isInteger(stockQuantity) || stockQuantity < 0 || stockQuantity > 1000000) {
+    message('/seller/products', 'Check the product details, price and stock quantity.');
+  }
+  const { error } = await supabase.from('products').update({
+    name, description: description || null, price, stock_quantity: stockQuantity,
+  }).eq('id', productId).eq('shop_id', shop.id);
+  if (error) message('/seller/products', 'The product details could not be updated.');
+  message('/seller/products', 'Product details updated.');
+}
+
 export async function setProductActive(formData: FormData) {
   const { supabase, shop } = await sellerContext();
   if (!shop) redirect('/seller/shop');
