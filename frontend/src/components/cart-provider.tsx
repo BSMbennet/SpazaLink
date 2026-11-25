@@ -10,6 +10,9 @@ export type CartItem = {
   price: number;
   quantity: number;
   available_stock: number;
+  delivery_fee: number;
+  offers_collection: boolean;
+  offers_delivery: boolean;
 };
 
 type CartContextValue = {
@@ -41,7 +44,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           Number.isFinite(item.price) &&
           Number.isInteger(item.quantity) &&
           item.quantity > 0
-        ));
+        ).map(item => ({ ...item, delivery_fee: Number(item.delivery_fee ?? 0), offers_collection: item.offers_collection ?? true, offers_delivery: item.offers_delivery ?? false })));
       }
     } catch {
       window.localStorage.removeItem(STORAGE_KEY);
