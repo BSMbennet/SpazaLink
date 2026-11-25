@@ -71,8 +71,8 @@ export async function addProduct(formData: FormData) {
   const categoryId = rawCategory || null;
 
   if (name.length < 2 || name.length > 120 || description.length > 500 ||
-      !Number.isFinite(price) || price < 0 || price > 99999999.99 ||
-      !Number.isInteger(stockQuantity) || stockQuantity < 0 || stockQuantity > 1000000 ||
+      rawPrice === '' || !Number.isFinite(price) || price < 0 || price > 99999999.99 ||
+      rawStock === '' || !Number.isInteger(stockQuantity) || stockQuantity < 0 || stockQuantity > 1000000 ||
       (categoryId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(categoryId))) {
     message('/seller/products', 'Check the product name, description, price, stock quantity and category.');
   }
