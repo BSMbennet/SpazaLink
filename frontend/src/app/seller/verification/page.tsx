@@ -20,7 +20,7 @@ export default async function SellerVerificationPage({ searchParams }: PageProps
 
   const messages: Record<string, string> = {
     uploaded: 'Your document was uploaded securely and is awaiting review.',
-    invalid: 'Choose a document type and a PDF, JPG, PNG or WebP file up to 5 MB.',
+    invalid: 'Choose a document type and a PDF, JPG, PNG or WebP file up to 4 MB.',
     'upload-failed': 'The private upload failed. Please try again.',
     'save-failed': 'The file uploaded but its review record could not be saved. The temporary upload was removed; please try again.',
   };
@@ -34,7 +34,7 @@ export default async function SellerVerificationPage({ searchParams }: PageProps
       <form action={submitSellerVerificationDocument} className="form-stack">
         <label>Document type<select name="documentType" defaultValue="identity" required><option value="identity">Identity document</option><option value="business">Business / trading document</option><option value="food_handling">Food handling / safety evidence</option><option value="other">Other supporting document</option></select></label>
         <label>Choose file<input type="file" name="document" accept=".pdf,image/jpeg,image/png,image/webp" required /></label>
-        <p className="muted-small">Accepted formats: PDF, JPEG, PNG and WebP. Maximum file size: 5 MB. Do not upload unnecessary personal information.</p>
+        <p className="muted-small">Accepted formats: PDF, JPEG, PNG and WebP. Maximum file size: 4 MB. Do not upload unnecessary personal information.</p>
         <button className="button button-primary" type="submit">Upload securely</button>
       </form>
     </section>
