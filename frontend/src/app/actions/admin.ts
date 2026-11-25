@@ -74,7 +74,7 @@ export async function submitSellerVerificationDocument(formData: FormData) {
     'application/pdf': 'pdf',
   };
   if (!['identity', 'business', 'food_handling', 'other'].includes(documentType) ||
-      !(file instanceof File) || file.size < 1 || file.size > 5 * 1024 * 1024 ||
+      !(file instanceof File) || file.size < 1 || file.size > 4 * 1024 * 1024 ||
       !types[file.type]) {
     redirect('/seller/verification?message=invalid');
   }
