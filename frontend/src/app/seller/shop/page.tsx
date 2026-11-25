@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { redirect } from 'next/navigation';
 import { saveShop } from '@/app/actions/seller';
 import { createClient } from '@/lib/supabase/server';
+import { signedR2ObjectUrl } from '@/lib/r2';
 
 type PageProps = { searchParams: Promise<{ message?: string }> };
 const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -28,9 +29,7 @@ export default async function SellerShopPage({ searchParams }: PageProps) {
   const { data: shopHours } = shop
     ? await supabase.from('shop_hours').select('weekday,opens_at,closes_at,is_closed').eq('shop_id', shop.id).order('weekday')
     : { data: [] };
-  const shopPhotoUrl = shop?.photo_path
-    ? supabase.storage.from('shop-assets').getPublicUrl(shop.photo_path).data.publicUrl
-    : null;
+  const shopPhotoUrl = shop?.photo_path ? await signedR2ObjectUrl(shop.photo_path) : null;
 
   return (
     <main className="page-shell">
