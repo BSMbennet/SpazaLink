@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { reviewRoleRequest, reviewSellerDocument, reviewShop } from '@/app/actions/admin';
 import { createClient } from '@/lib/supabase/server';
+import { signedR2ObjectUrl } from '@/lib/r2';
 
 type PageProps = { searchParams: Promise<{ notice?: string }> };
 type Profile = { id: string; full_name: string | null; phone: string | null };
@@ -33,8 +34,9 @@ export default async function AdminPage({ searchParams }: PageProps) {
     : { data: [] as Profile[] };
   const profiles = new Map((profileRows ?? []).map((p: Profile)=>[p.id,p] as const));
   const signedDocuments = await Promise.all(documents.map(async doc => {
-    const { data } = await supabase.storage.from('seller-verification').createSignedUrl(doc.object_path,60);
-    return { ...doc, signedUrl: data?.signedUrl ?? null };
+    let signedUrl: string | null = null;
+    try { signedUrl = await signedR2ObjectUrl(doc.object_path, 60); } catch { signedUrl = null; }
+    return { ...doc, signedUrl };
   }));
   const messages: Record<string,string> = {
     updated: 'Review saved successfully.',
