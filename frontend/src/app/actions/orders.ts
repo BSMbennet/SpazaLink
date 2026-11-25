@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
+import { requestWhatsAppOrderNotice } from '@/lib/whatsapp';
 
 type OrderResult =
   | { ok: true; orderId: string; orderNumber: number; total: number }
@@ -74,6 +75,7 @@ export async function placeCashOrder(formData: FormData): Promise<OrderResult> {
   }
 
   const result = data as { order_id: string; order_number: number; total: number };
+  await requestWhatsAppOrderNotice(supabase, result.order_id, 'Order placed — cash payment due');
   revalidatePath('/marketplace');
   revalidatePath('/orders');
   revalidatePath('/seller/orders');
