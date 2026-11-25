@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { AddToCartButton } from '@/components/add-to-cart-button';
 import { CartLink } from '@/components/cart-link';
 import { createClient } from '@/lib/supabase/server';
+import { signedR2ObjectUrl } from '@/lib/r2';
 
 type PageProps = {
   searchParams: Promise<{ search?: string; area?: string; category?: string }>;
@@ -28,6 +29,16 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
     supabase.from('categories').select('id,name_en').eq('active', true).order('sort_order'),
   ]);
 
+  const productsWithPhotos = await Promise.all((products ?? []).map(async product => {
+    const shop = Array.isArray(product.shops) ? product.shops[0] : product.shops;
+    return {
+      ...product,
+      shop,
+      photoUrl: product.photo_path ? await signedR2ObjectUrl(product.photo_path) : null,
+      shopPhotoUrl: shop?.photo_path ? await signedR2ObjectUrl(shop.photo_path) : null,
+    };
+  }));
+
   return <main className="page-shell">
     <header className="topbar"><Link href="/" className="brand-mark">Spaza<span>Link</span></Link><nav className="nav-actions"><Link href="/dashboard" className="button button-quiet">My account</Link><CartLink/></nav></header>
     <section className="section-heading"><p className="eyebrow">Thohoyandou pilot</p><h1>Shop close to home.</h1><p className="muted">Local products from participating neighbourhood sellers.</p></section>
@@ -38,10 +49,10 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
       <button className="button button-primary" type="submit">Search</button>
       {(search || area || categoryId) && <Link href="/marketplace" className="text-link">Clear filters</Link>}
     </form>
-    {error ? <p className="notice">The marketplace could not load right now. Please try again.</p> : products?.length ? <div className="product-grid">{products.map((product) => {
-      const shop = Array.isArray(product.shops) ? product.shops[0] : product.shops;
-      const photoUrl = product.photo_path ? supabase.storage.from('shop-assets').getPublicUrl(product.photo_path).data.publicUrl : null;
-      const shopPhotoUrl = shop?.photo_path ? supabase.storage.from('shop-assets').getPublicUrl(shop.photo_path).data.publicUrl : null;
+    {error ? <p className="notice">The marketplace could not load right now. Please try again.</p> : productsWithPhotos.length ? <div className="product-grid">{productsWithPhotos.map((product) => {
+      const shop = product.shop;
+      const photoUrl = product.photoUrl;
+      const shopPhotoUrl = product.shopPhotoUrl;
       return <article className="product-card" key={product.id}>
         {photoUrl ? <Image className="market-product-photo" src={photoUrl} alt={product.name} width={640} height={320} unoptimized/> : <div className="product-placeholder">{product.name.slice(0, 1).toUpperCase()}</div>}
         <div className="product-content">
