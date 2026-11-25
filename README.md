@@ -25,7 +25,7 @@ Run the API separately with `npm run dev:api`.
 
 Import `BSMbennet/SpazaLink`, set Root Directory to `frontend`, and configure:
 - `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 - `NEXT_PUBLIC_API_URL`
 
 Build command: `npm run build`.
@@ -36,7 +36,7 @@ Use `render.yaml` or create a Docker web service with:
 - Docker context: `backend`
 - Dockerfile: `backend/Dockerfile`
 - Health check: `/health`
-- Environment variables: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `FRONTEND_ORIGIN`
+- Environment variables: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `FRONTEND_ORIGIN`
 
 The API uses the Supabase publishable/anon key and forwards authenticated callers' access tokens so database Row Level Security remains in force. Never place a service-role key in the browser or public API.
 
