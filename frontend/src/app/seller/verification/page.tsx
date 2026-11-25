@@ -13,7 +13,7 @@ export default async function SellerVerificationPage({ searchParams }: PageProps
   if (authError || !userId) redirect('/login');
   const [{ data: profile }, { data: request }, { data: documents }] = await Promise.all([
     supabase.from('profiles').select('role').eq('id', userId).maybeSingle(),
-    supabase.from('role_requests').select('id').eq('user_id', userId).eq('requested_role', 'seller').limit(1).maybeSingle(),
+    supabase.from('role_requests').select('id').eq('user_id', userId).eq('requested_role', 'seller').in('status', ['pending','approved']).limit(1).maybeSingle(),
     supabase.from('seller_verification_documents').select('id,document_type,status,submitted_at,review_notes').eq('user_id', userId).order('submitted_at', { ascending: false }).limit(20),
   ]);
   if (profile?.role !== 'seller' && !request) redirect('/dashboard');
