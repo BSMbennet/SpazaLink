@@ -44,7 +44,7 @@ test('shop approval requires an approved seller document', () => {
 });
 
 test('verification uploads are restricted by size and content type on the server', () => {
-  assert.match(actions, /file\.size > 5 \* 1024 \* 1024/);
+  assert.match(actions, /file\.size > 4 \* 1024 \* 1024/);
   assert.match(actions, /application\/pdf/);
   assert.match(actions, /image\/webp/);
   assert.match(actions, /upsert: false/);
