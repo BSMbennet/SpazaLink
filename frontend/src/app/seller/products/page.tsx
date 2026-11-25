@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { redirect } from 'next/navigation';
 import { addProduct, setProductActive, updateProduct } from '@/app/actions/seller';
 import { DeleteProductButton } from './delete-product-button';
@@ -50,7 +51,7 @@ export default async function SellerProductsPage({ searchParams }: PageProps) {
             : null;
           return <article className="feature-card" key={product.id}>
             <p className="eyebrow">{product.is_active ? 'Listed' : 'Hidden'}</p>
-            {photoUrl && <img className="seller-product-photo" src={photoUrl} alt={product.name} loading="lazy"/>}
+            {photoUrl && <Image className="seller-product-photo" src={photoUrl} alt={product.name} width={640} height={320} unoptimized/>}
             <form action={updateProduct} className="form-stack" encType="multipart/form-data">
               <input type="hidden" name="productId" value={product.id}/>
               <label>Product name<input name="name" required minLength={2} maxLength={120} defaultValue={product.name}/></label>
