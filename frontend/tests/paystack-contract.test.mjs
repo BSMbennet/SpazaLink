@@ -9,32 +9,32 @@ const backend = readFileSync(new URL('../../backend/src/server.ts', import.meta.
 const callback = readFileSync(new URL('../src/app/payments/paystack/callback/page.tsx', import.meta.url), 'utf8');
 
 test('online order is created separately from the cash checkout', () => {
-  assert.match(migration, /create or replace function public\\.create_online_order/i);
-  assert.match(migration, /'online'::public\\.payment_method, 'pending'::public\\.payment_status/i);
-  assert.match(migration, /for update of p/i);
-  assert.match(migration, /record_paystack_initialization/i);
+  assert.ok(migration.includes('create or replace function public.create_online_order'));
+  assert.ok(migration.includes("'online'::public.payment_method, 'pending'::public.payment_status"));
+  assert.ok(migration.includes('for update of p'));
+  assert.ok(migration.includes('record_paystack_initialization'));
 });
 
 test('Paystack secret is used only by a server action and currency is ZAR', () => {
-  assert.match(action, /process\\.env\\.PAYSTACK_SECRET_KEY/);
-  assert.match(action, /currency: 'ZAR'/);
-  assert.match(action, /https:\\/\\/api\\.paystack\\.co\\/transaction\\/initialize/);
-  assert.doesNotMatch(action, /NEXT_PUBLIC_PAYSTACK_SECRET_KEY/);
+  assert.ok(action.includes('process.env.PAYSTACK_SECRET_KEY'));
+  assert.ok(action.includes("currency: 'ZAR'"));
+  assert.ok(action.includes('https://api.paystack.co/transaction/initialize'));
+  assert.ok(!action.includes('NEXT_PUBLIC_PAYSTACK_SECRET_KEY'));
 });
 
 test('webhook verifies raw body signature and verifies the transaction with Paystack', () => {
-  assert.match(backend, /parseAs: 'buffer'/);
-  assert.match(backend, /createHmac\\('sha512'/);
-  assert.match(backend, /timingSafeEqual/);
-  assert.match(backend, /transaction\\/verify\\//);
-  assert.match(backend, /finalize_paystack_payment/);
+  assert.ok(backend.includes("parseAs: 'buffer'"));
+  assert.ok(backend.includes("createHmac('sha512'"));
+  assert.ok(backend.includes('timingSafeEqual'));
+  assert.ok(backend.includes('transaction/verify/'));
+  assert.ok(backend.includes('finalize_paystack_payment'));
 });
 
 test('seller cannot accept an online order before verified payment', () => {
-  assert.match(gate, /ONLINE_PAYMENT_NOT_CONFIRMED/);
-  assert.match(gate, /v_order\\.payment_status <> 'paid'/);
+  assert.ok(gate.includes('ONLINE_PAYMENT_NOT_CONFIRMED'));
+  assert.ok(gate.includes("v_order.payment_status <> 'paid'"));
 });
 
 test('browser return does not treat a redirect as payment proof', () => {
-  assert.match(callback, /Returning to this page does not by itself mean the payment succeeded/);
+  assert.ok(callback.includes('Returning to this page does not by itself mean the payment succeeded'));
 });
