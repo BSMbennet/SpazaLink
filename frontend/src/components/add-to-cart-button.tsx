@@ -10,9 +10,12 @@ type Props = {
   stock: number;
   shopId: string;
   shopName: string;
+  deliveryFee: number;
+  offersCollection: boolean;
+  offersDelivery: boolean;
 };
 
-export function AddToCartButton({ productId, productName, price, stock, shopId, shopName }: Props) {
+export function AddToCartButton({ productId, productName, price, stock, shopId, shopName, deliveryFee, offersCollection, offersDelivery }: Props) {
   const { addItem, ready } = useCart();
   const [message, setMessage] = useState('');
   function add() {
@@ -24,6 +27,9 @@ export function AddToCartButton({ productId, productName, price, stock, shopId, 
       price,
       quantity: 1,
       available_stock: stock,
+      delivery_fee: deliveryFee,
+      offers_collection: offersCollection,
+      offers_delivery: offersDelivery,
     });
     setMessage(added ? 'Added to cart' : 'Your cart already has items from another shop. Finish or clear that cart first.');
   }
