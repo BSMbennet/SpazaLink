@@ -13,7 +13,12 @@ export function CartClient() {
   const [message, setMessage] = useState('');
   const [pending, startTransition] = useTransition();
   const shop = items[0];
-  const fulfillment = selectedFulfillment ?? (shop?.offers_collection ? 'collection' : 'seller_delivery');
+  const defaultFulfillment = shop?.offers_collection ? 'collection' : 'seller_delivery';
+  const fulfillment = selectedFulfillment === 'collection' && shop?.offers_collection
+    ? 'collection'
+    : selectedFulfillment === 'seller_delivery' && shop?.offers_delivery
+      ? 'seller_delivery'
+      : defaultFulfillment;
   const deliveryFee = fulfillment === 'seller_delivery' ? Number(shop?.delivery_fee ?? 0) : 0;
   const total = subtotal + deliveryFee;
 
