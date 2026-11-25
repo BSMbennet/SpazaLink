@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { redirect } from 'next/navigation';
 import { saveShop } from '@/app/actions/seller';
 import { createClient } from '@/lib/supabase/server';
@@ -37,7 +38,7 @@ export default async function SellerShopPage({ searchParams }: PageProps) {
       <section className="section-heading"><p className="eyebrow">Seller workspace</p><h1>{shop ? 'Your shop details' : 'Set up your shop'}</h1><p className="muted">Add the details buyers need to find and collect from your business.</p></section>
       {message && <p className="notice" role="status">{message}</p>}
       {shop && <p className="notice">Shop status: <strong>{shop.status}</strong>. New shops are reviewed before appearing in public search.</p>}
-      {shopPhotoUrl && <img className="seller-shop-photo" src={shopPhotoUrl} alt={shop?.name ? `${shop.name} shop` : 'Shop photo'} loading="lazy"/>}
+      {shopPhotoUrl && <Image className="seller-shop-photo" src={shopPhotoUrl} alt={shop?.name ? `${shop.name} shop` : 'Shop photo'} width={960} height={480} unoptimized/>}
       <section className="auth-card auth-card-wide">
         <form action={saveShop} className="form-stack" encType="multipart/form-data">
           <label>Shop name<input name="name" required minLength={2} maxLength={100} defaultValue={shop?.name ?? ''}/></label>
