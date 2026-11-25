@@ -42,6 +42,7 @@ export function CartClient() {
         return;
       }
       if ('checkoutUrl' in result) {
+        clear();
         window.location.assign(result.checkoutUrl);
         return;
       }
