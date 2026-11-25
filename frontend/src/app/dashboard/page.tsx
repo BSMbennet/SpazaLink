@@ -17,6 +17,7 @@ export default async function DashboardPage() {
     <section className="dashboard-grid">
       <article className="feature-card"><span className="feature-icon">⌕</span><h2>Find local shops</h2><p>Browse products from participating sellers near you.</p><Link href="/marketplace" className="text-link">Open marketplace →</Link></article>
       <article className="feature-card"><span className="feature-icon">▣</span><h2>Seller setup</h2><p>Seller accounts are activated after the role request is reviewed.</p>{roleRequests?.length ? <ul className="request-list">{roleRequests.map((request, index) => <li key={`${request.requested_role}-${index}`}>{request.requested_role}: <strong>{request.status}</strong></li>)}</ul> : <span className="muted-small">No seller or agent request is pending.</span>}</article>
+      {profile?.role === 'seller' && <article className="feature-card"><span className="feature-icon">▤</span><h2>Seller workspace</h2><p>Manage your shop details, product listings and stock.</p><Link href="/seller/shop" className="text-link">Open seller workspace →</Link></article>}
     </section>
     <p className="muted-small">Selecting seller or agent during sign-up submits a request. It does not grant permissions until reviewed by an administrator.</p>
   </main>;
