@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { addProduct, setProductActive, updateProduct } from '@/app/actions/seller';
 import { DeleteProductButton } from './delete-product-button';
 import { createClient } from '@/lib/supabase/server';
+import { signedR2ObjectUrl } from '@/lib/r2';
 
 type PageProps = { searchParams: Promise<{ message?: string }> };
 
@@ -23,6 +24,11 @@ export default async function SellerProductsPage({ searchParams }: PageProps) {
     supabase.from('products').select('id,name,description,price,stock_quantity,is_active,category_id,photo_path').eq('shop_id', shop.id).order('created_at', { ascending: false }),
     supabase.from('categories').select('id,name_en').eq('active', true).order('sort_order'),
   ]);
+
+  const productsWithPhotos = await Promise.all((products ?? []).map(async product => ({
+    ...product,
+    photoUrl: product.photo_path ? await signedR2ObjectUrl(product.photo_path) : null,
+  })));
 
   return (
     <main className="page-shell">
@@ -45,13 +51,10 @@ export default async function SellerProductsPage({ searchParams }: PageProps) {
         </form>
       </section>
       <section className="dashboard-grid seller-product-grid">
-        {(products ?? []).map(product => {
-          const photoUrl = product.photo_path
-            ? supabase.storage.from('shop-assets').getPublicUrl(product.photo_path).data.publicUrl
-            : null;
+        {productsWithPhotos.map(product => {
           return <article className="feature-card" key={product.id}>
             <p className="eyebrow">{product.is_active ? 'Listed' : 'Hidden'}</p>
-            {photoUrl && <Image className="seller-product-photo" src={photoUrl} alt={product.name} width={640} height={320} unoptimized/>}
+            {product.photoUrl && <Image className="seller-product-photo" src={product.photoUrl} alt={product.name} width={640} height={320} unoptimized/>}
             <form action={updateProduct} className="form-stack" encType="multipart/form-data">
               <input type="hidden" name="productId" value={product.id}/>
               <label>Product name<input name="name" required minLength={2} maxLength={120} defaultValue={product.name}/></label>
