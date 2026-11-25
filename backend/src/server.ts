@@ -7,9 +7,9 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 const PORT = Number(process.env.PORT ?? 10000);
 const HOST = process.env.HOST ?? '0.0.0.0';
 const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN;
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) throw new Error('SUPABASE_URL and SUPABASE_ANON_KEY are required');
+if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) throw new Error('SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY are required');
 
 const app = Fastify({ logger: true, trustProxy: true, bodyLimit: 1_048_576 });
 await app.register(helmet);
@@ -25,7 +25,7 @@ function bearer(request: FastifyRequest): string | null {
   return value?.startsWith('Bearer ') ? value.slice(7).trim() || null : null;
 }
 function scopedClient(token: string): SupabaseClient {
-  return createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
+  return createClient(SUPABASE_URL!, SUPABASE_PUBLISHABLE_KEY!, {
     auth: { persistSession: false, autoRefreshToken: false },
     global: { headers: { Authorization: `Bearer ${token}` } },
   });
@@ -39,7 +39,7 @@ async function authenticated(request: FastifyRequest, reply: FastifyReply) {
   return { client, user: data.user };
 }
 function publicClient() {
-  return createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, { auth: { persistSession: false, autoRefreshToken: false } });
+  return createClient(SUPABASE_URL!, SUPABASE_PUBLISHABLE_KEY!, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 
 app.get('/health', async () => ({ status: 'ok', service: 'spazalink-api' }));
