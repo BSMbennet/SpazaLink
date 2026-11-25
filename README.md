@@ -47,4 +47,4 @@ A payment provider has not yet been approved for implementation. Paystack was su
 
 ## Verification status
 
-Eight lightweight domain/API contract tests pass locally. Dependency installation timed out in the build environment, so TypeScript, lint, production builds and live service checks remain unverified. No lockfile is committed yet. Do not treat deployment configuration as proof of a live deployment.
+GitHub Actions run 10 passed dependency installation, all eight automated tests, TypeScript checks for both workspaces, ESLint, the Next.js production build, and the backend TypeScript build on commit `4bd17e6`. This verifies compilation and automated checks, not live Supabase user flows or deployed Render/Vercel services. No lockfile is committed yet. The initial schema SQL file is still missing from GitHub, so a fresh database restore from this repository remains incomplete.
