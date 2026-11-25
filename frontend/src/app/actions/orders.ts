@@ -79,3 +79,95 @@ export async function placeCashOrder(formData: FormData): Promise<OrderResult> {
   revalidatePath('/seller/orders');
   return { ok: true, orderId: result.order_id, orderNumber: result.order_number, total: Number(result.total) };
 }
+
+
+
+export async function startPaystackOrder(formData: FormData): Promise<
+  | { ok: true; checkoutUrl: string }
+  | { ok: false; message: string }
+> {
+  const secretKey = process.env.PAYSTACK_SECRET_KEY;
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL;
+  if (!secretKey || !siteUrl) return { ok: false, message: 'Online payments are not configured yet. Please choose cash.' };
+
+  const supabase = await createClient();
+  const { data: claimsData, error: claimsError } = await supabase.auth.getClaims();
+  const userId = claimsData?.claims?.sub;
+  const email = claimsData?.claims?.email;
+  if (claimsError || !userId) return { ok: false, message: 'Please sign in before placing an order.' };
+  if (typeof email !== 'string' || !email.includes('@')) return { ok: false, message: 'Add a valid email address to your account before paying online.' };
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', userId).maybeSingle();
+  if (profile?.role !== 'buyer') return { ok: false, message: 'A buyer account is required to place an order.' };
+
+  const shopId = String(formData.get('shopId') ?? '');
+  const fulfillment = String(formData.get('fulfillment') ?? '');
+  const deliveryAddress = String(formData.get('deliveryAddress') ?? '').trim();
+  const buyerNote = String(formData.get('buyerNote') ?? '').trim();
+  const rawItems = String(formData.get('items') ?? '');
+  if (!uuidPattern.test(shopId) || !['collection', 'seller_delivery'].includes(fulfillment)) return { ok: false, message: 'Your checkout details are not valid.' };
+  if (fulfillment === 'seller_delivery' && (deliveryAddress.length < 4 || deliveryAddress.length > 300)) return { ok: false, message: 'Enter a valid delivery address.' };
+  if (buyerNote.length > 500 || rawItems.length > 12000) return { ok: false, message: 'Your note or cart is too long.' };
+
+  let items: Array<{ product_id: string; quantity: number }>;
+  try {
+    const parsed: unknown = JSON.parse(rawItems);
+    if (!Array.isArray(parsed) || parsed.length < 1 || parsed.length > 30) throw new Error('Invalid items');
+    items = parsed.map((item: unknown) => {
+      if (!item || typeof item !== 'object') throw new Error('Invalid item');
+      const value = item as { product_id?: unknown; quantity?: unknown };
+      if (typeof value.product_id !== 'string' || !uuidPattern.test(value.product_id) ||
+          typeof value.quantity !== 'number' || !Number.isInteger(value.quantity) || value.quantity < 1 || value.quantity > 100) throw new Error('Invalid item');
+      return { product_id: value.product_id, quantity: value.quantity };
+    });
+    if (new Set(items.map(item => item.product_id)).size !== items.length) throw new Error('Duplicate products');
+  } catch {
+    return { ok: false, message: 'Your cart could not be read. Refresh and try again.' };
+  }
+
+  const { data: orderData, error: orderError } = await supabase.rpc('create_online_order', {
+    p_shop_id: shopId,
+    p_fulfillment: fulfillment,
+    p_delivery_address: fulfillment === 'seller_delivery' ? deliveryAddress : null,
+    p_buyer_note: buyerNote || null,
+    p_items: items,
+  });
+  if (orderError || !orderData) {
+    if (orderError?.message.includes('INSUFFICIENT_STOCK')) return { ok: false, message: 'Some items have just sold out. Refresh your cart.' };
+    return { ok: false, message: 'We could not create your order. Please review your cart and try again.' };
+  }
+
+  const order = orderData as { order_id: string; order_number: number; total: number };
+  const amountMinor = Math.round(Number(order.total) * 100);
+  const reference = 'spz' + crypto.randomUUID().replaceAll('-', '');
+  const { error: recordError } = await supabase.rpc('record_paystack_initialization', {
+    p_order_id: order.order_id,
+    p_reference: reference,
+    p_amount_minor: amountMinor,
+  });
+  if (recordError) return { ok: false, message: 'Order #' + order.order_number + ' was created but payment setup failed. Please contact support.' };
+
+  let response: Response;
+  try {
+    response = await fetch('https://api.paystack.co/transaction/initialize', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + secretKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        amount: amountMinor,
+        currency: 'ZAR',
+        reference,
+        callback_url: siteUrl.replace(/\/$/, '') + '/payments/paystack/callback',
+        metadata: { order_id: order.order_id, order_number: order.order_number, platform: 'SpazaLink' },
+      }),
+      cache: 'no-store',
+    });
+  } catch {
+    return { ok: false, message: 'Paystack could not be reached. Order #' + order.order_number + ' is pending payment; please contact support before retrying.' };
+  }
+  const payload = await response.json() as { status?: boolean; data?: { authorization_url?: string } };
+  const checkoutUrl = payload.data?.authorization_url;
+  if (!response.ok || !payload.status || !checkoutUrl || !checkoutUrl.startsWith('https://checkout.paystack.com/')) {
+    return { ok: false, message: 'Paystack could not start checkout. Order #' + order.order_number + ' is pending payment.' };
+  }
+  return { ok: true, checkoutUrl };
+}
