@@ -16,7 +16,7 @@ export default async function SellerShopPage({ searchParams }: PageProps) {
 
   const [{ data: profile }, { data: shop }, { data: requests }] = await Promise.all([
     supabase.from('profiles').select('role').eq('id', userId).maybeSingle(),
-    supabase.from('shops').select('id,name,description,phone,address_text,area,offers_collection,offers_delivery,delivery_fee,status,photo_path').eq('owner_id', userId).maybeSingle(),
+    supabase.from('shops').select('id,name,description,phone,address_text,area,offers_collection,offers_delivery,delivery_fee,status,verification_status,verification_notes,photo_path').eq('owner_id', userId).maybeSingle(),
     supabase.from('role_requests').select('status').eq('user_id', userId).eq('requested_role', 'seller').order('created_at', { ascending: false }).limit(1),
   ]);
 
@@ -37,7 +37,7 @@ export default async function SellerShopPage({ searchParams }: PageProps) {
       <header className="topbar"><Link href="/" className="brand-mark">Spaza<span>Link</span></Link><Link href="/dashboard" className="text-link">My account</Link></header>
       <section className="section-heading"><p className="eyebrow">Seller workspace</p><h1>{shop ? 'Your shop details' : 'Set up your shop'}</h1><p className="muted">Add the details buyers need to find and collect from your business.</p></section>
       {message && <p className="notice" role="status">{message}</p>}
-      {shop && <p className="notice">Shop status: <strong>{shop.status}</strong>. New shops are reviewed before appearing in public search.</p>}
+      {shop && <p className="notice">Shop status: <strong>{shop.status}</strong> · Verification: <strong>{shop.verification_status}</strong>. Shops appear in public search only after approval. {shop.verification_notes && <>Review note: {shop.verification_notes}</>}</p>}
       {shopPhotoUrl && <Image className="seller-shop-photo" src={shopPhotoUrl} alt={shop?.name ? `${shop.name} shop` : 'Shop photo'} width={960} height={480} unoptimized/>}
       <section className="auth-card auth-card-wide">
         <form action={saveShop} className="form-stack" encType="multipart/form-data">
@@ -68,7 +68,7 @@ export default async function SellerShopPage({ searchParams }: PageProps) {
         </form>
       </section>
       <p className="muted-small food-safety-note">Sellers are responsible for the safety and lawful handling of any food they list on SpazaLink.</p>
-      {shop && <p className="form-foot"><Link href="/seller/products" className="text-link">Manage your products →</Link></p>}
+      {shop && <p className="form-foot"><Link href="/seller/products" className="text-link">Manage your products →</Link> · <Link href="/seller/verification" className="text-link">Verification documents →</Link></p>}
     </main>
   );
 }
