@@ -44,6 +44,6 @@ This is an owner-operated one-time bootstrap, not an app endpoint. Do not share 
 ## Security and limits
 - No service-role key is used in the browser or these server actions.
 - Private bucket files are never exposed as public URLs; temporary signed links expire after 60 seconds.
-- RPC functions are in the exposed public schema and intentionally use tightly scoped SECURITY DEFINER because the app's direct profile/role/shop verification writes are not granted to users. Each checks auth.uid() and private.has_role('admin'); execution is revoked from PUBLIC and anon and granted to authenticated only.
+- The PostgREST-facing public RPCs are SECURITY INVOKER wrappers. Their privileged implementations live in the unexposed private schema as SECURITY DEFINER functions and each checks auth.uid() and private.has_role('admin'). Execute is revoked from PUBLIC and anon and granted only to authenticated. The private schema is not exposed through the Data API.
 - Uploaded identity or business documents are sensitive personal information. Collect only what is needed, restrict admin access, and define a retention/deletion process before the public pilot.
 - No real admin, applicants, shops or uploaded documents exist yet. The bootstrap and real review workflow still need an authenticated end-to-end test.
