@@ -31,7 +31,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
   const { data: profileRows } = ownerIds.length
     ? await supabase.from('profiles').select('id,full_name,phone').in('id',ownerIds)
     : { data: [] as Profile[] };
-  const profiles = new Map((profileRows ?? []).map((p: Profile)=>[p.id,p]));
+  const profiles = new Map((profileRows ?? []).map((p: Profile)=>[p.id,p] as const));
   const signedDocuments = await Promise.all(documents.map(async doc => {
     const { data } = await supabase.storage.from('seller-verification').createSignedUrl(doc.object_path,60);
     return { ...doc, signedUrl: data?.signedUrl ?? null };
