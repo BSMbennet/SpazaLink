@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { uploadR2Object } from '@/lib/r2';
 
 function message(path: string, value: string): never {
   redirect(`${path}?message=${encodeURIComponent(value)}`);
@@ -12,7 +13,6 @@ function isImageFile(value: FormDataEntryValue | null): value is File {
 }
 
 async function uploadSellerImage(
-  supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
   file: File,
   folder: 'shops' | 'products',
@@ -25,12 +25,12 @@ async function uploadSellerImage(
   const extension = extensions[file.type];
   if (!extension || file.size > 2 * 1024 * 1024) return null;
   const path = `${userId}/${folder}/${crypto.randomUUID()}.${extension}`;
-  const { error } = await supabase.storage.from('shop-assets').upload(path, file, {
-    contentType: file.type,
-    cacheControl: '3600',
-    upsert: false,
-  });
-  return error ? null : path;
+  try {
+    await uploadR2Object(path, file);
+    return path;
+  } catch {
+    return null;
+  }
 }
 
 async function sellerContext() {
@@ -102,7 +102,7 @@ export async function saveShop(formData: FormData) {
   if (hoursError) message('/seller/shop', 'Shop details were saved, but opening hours could not be updated. Please retry.');
 
   if (photoFile) {
-    const photoPath = await uploadSellerImage(supabase, userId, photoFile, 'shops');
+    const photoPath = await uploadSellerImage(userId, photoFile, 'shops');
     if (!photoPath) message('/seller/shop', 'Photo upload failed. Use a JPG, PNG or WebP image smaller than 2 MB.');
     const { error: photoError } = await supabase.from('shops').update({ photo_path: photoPath }).eq('id', shopId).eq('owner_id', userId);
     if (photoError) message('/seller/shop', 'Shop details were saved, but the shop photo could not be attached.');
@@ -134,7 +134,7 @@ export async function addProduct(formData: FormData) {
     message('/seller/products', 'Product photos must be JPG, PNG or WebP and no larger than 2 MB.');
   }
 
-  const photoPath = photoFile ? await uploadSellerImage(supabase, userId, photoFile, 'products') : null;
+  const photoPath = photoFile ? await uploadSellerImage(userId, photoFile, 'products') : null;
   if (photoFile && !photoPath) message('/seller/products', 'Photo upload failed. Use a JPG, PNG or WebP image smaller than 2 MB.');
   const { error } = await supabase.from('products').insert({
     shop_id: shop.id, name, description: description || null, price,
