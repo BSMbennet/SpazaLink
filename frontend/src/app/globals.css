@@ -33,3 +33,8 @@
 .product-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
 .button-danger{background:#fff0ee;color:#9a332b;border:1px solid #efc4bf}
 .product-actions .button{min-height:42px;padding:0 14px}
+
+.market-product-photo{display:block;width:100%;height:150px;object-fit:cover;background:#e8efdf}
+.market-shop-line{display:flex;align-items:center;gap:8px;min-height:28px}
+.market-shop-line img{width:26px;height:26px;object-fit:cover;border-radius:50%}
+.market-shop-line p{margin:0}
