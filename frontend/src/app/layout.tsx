@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
+import { CartProvider } from '@/components/cart-provider';
 
 export const metadata: Metadata = {
   title: 'SpazaLink | Your neighbourhood marketplace',
@@ -12,5 +13,5 @@ export const metadata: Metadata = {
 export const viewport: Viewport = { themeColor: '#155e45', width: 'device-width', initialScale: 1 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
-  return <html lang="en"><body>{children}</body></html>;
+  return <html lang="en"><body><CartProvider>{children}</CartProvider></body></html>;
 }
