@@ -24,7 +24,7 @@ export async function uploadR2Object(key: string, file: File): Promise<void> {
     Key: key,
     Body: body,
     ContentType: file.type,
-    CacheControl: 'public, max-age=3600, s-maxage=86400',
+    CacheControl: 'private, max-age=3600',
   }));
 }
 
