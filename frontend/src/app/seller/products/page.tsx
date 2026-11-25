@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { addProduct, setProductActive } from '@/app/actions/seller';
+import { addProduct, setProductActive, updateProduct } from '@/app/actions/seller';
 import { createClient } from '@/lib/supabase/server';
 
 type PageProps = { searchParams: Promise<{ message?: string }> };
@@ -18,7 +18,7 @@ export default async function SellerProductsPage({ searchParams }: PageProps) {
   if (!shop) redirect('/seller/shop?message=Set%20up%20your%20shop%20first.');
 
   const [{ data: products }, { data: categories }] = await Promise.all([
-    supabase.from('products').select('id,name,description,price,stock_quantity,is_active').eq('shop_id', shop.id).order('created_at', { ascending: false }),
+    supabase.from('products').select('id,name,description,price,stock_quantity,is_active,category_id').eq('shop_id', shop.id).order('created_at', { ascending: false }),
     supabase.from('categories').select('id,name_en').eq('active', true).order('sort_order'),
   ]);
 
@@ -44,9 +44,17 @@ export default async function SellerProductsPage({ searchParams }: PageProps) {
       <section className="dashboard-grid">
         {(products ?? []).map(product => <article className="feature-card" key={product.id}>
           <p className="eyebrow">{product.is_active ? 'Listed' : 'Hidden'}</p><h2>{product.name}</h2>
-          {product.description && <p>{product.description}</p>}
-          <p className="price">R {Number(product.price).toFixed(2)}</p><p className="muted-small">{product.stock_quantity} in stock</p>
-          <form action={setProductActive}><input type="hidden" name="productId" value={product.id}/><input type="hidden" name="active" value={product.is_active ? 'false' : 'true'}/><button className="button button-secondary" type="submit">{product.is_active ? 'Hide product' : 'List product'}</button></form>
+          <form action={updateProduct} className="form-stack">
+            <input type="hidden" name="productId" value={product.id}/>
+            <label>Product name<input name="name" required minLength={2} maxLength={120} defaultValue={product.name}/></label>
+            <label>Description<input name="description" maxLength={500} defaultValue={product.description ?? ''}/></label>
+            <div className="form-grid">
+              <label>Price (R)<input name="price" type="number" min="0" max="99999999.99" step="0.01" required defaultValue={product.price}/></label>
+              <label>Stock<input name="stockQuantity" type="number" min="0" max="1000000" step="1" required defaultValue={product.stock_quantity}/></label>
+            </div>
+            <button className="button button-primary" type="submit">Save product</button>
+          </form>
+          <form action={setProductActive} className="form-stack"><input type="hidden" name="productId" value={product.id}/><input type="hidden" name="active" value={product.is_active ? 'false' : 'true'}/><button className="button button-secondary" type="submit">{product.is_active ? 'Hide product' : 'List product'}</button></form>
         </article>)}
         {!products?.length && <p className="empty-state">Your product catalogue is empty. Add your first product above.</p>}
       </section>
