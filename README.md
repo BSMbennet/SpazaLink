@@ -11,7 +11,7 @@ Neighbourhood marketplace for small sellers in South Africa. Initial pilot: Thoh
 ## Phase 1 foundation
 
 - Supabase project created in São Paulo (`sa-east-1`)
-- Initial schema and RLS policies applied; all 20 public tables have RLS enabled
+- Initial schema applied; all 20 public application tables have RLS enabled
 - Public shop assets and private seller-verification storage buckets
 - Buyer profile creation and pending seller/agent role requests
 - Sign-up, login, dashboard and marketplace starter screens
@@ -28,7 +28,7 @@ Never put a Supabase secret/service-role key in a `NEXT_PUBLIC_` variable or com
 
 ## Database
 
-Migrations are in `supabase/migrations/` and have been applied to the production Supabase project. Do not edit an applied migration; add a new migration for every schema change.
+The live Supabase project has four migrations applied. The SQL migration files from the initial build snapshot still need to be mirrored into this repository; do not treat this repository as a complete database restore until those scripts are added. Do not edit an applied migration; add a new migration for every schema change.
 
 ## Security notes
 
