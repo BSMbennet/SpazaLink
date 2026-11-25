@@ -1,46 +1,49 @@
 # SpazaLink
 
-Neighbourhood marketplace for small sellers in South Africa. Initial pilot: Thohoyandou, Limpopo.
+South African neighbourhood marketplace pilot, starting in Thohoyandou, Limpopo.
 
-## Stack
+## Monorepo structure
 
-- Next.js App Router, React, TypeScript, Tailwind CSS
-- Supabase Auth, Postgres, Row Level Security and Storage
-- Vercel deployment target
+- `frontend/` — Next.js App Router PWA. Configure Vercel **Root Directory** as `frontend`.
+- `backend/` — Fastify TypeScript API. Deploy to Render from `backend/Dockerfile` or use the root `render.yaml` blueprint.
+- `supabase/migrations/` — versioned database migrations for the dedicated SpazaLink Supabase project.
 
-## Phase 1 foundation
+## Local development
 
-- Supabase project created in São Paulo (`sa-east-1`)
-- Initial schema applied; all 20 public application tables have RLS enabled
-- Public shop assets and private seller-verification storage buckets
-- Buyer profile creation and pending seller/agent role requests
-- Sign-up, login, dashboard and marketplace starter screens
-- POPIA notice, language message files and PWA manifest
-- Five domain-rule tests passed with Node's built-in test runner
+Requires Node.js 22+ and npm.
 
-## Local setup
+```sh
+npm install
+cp frontend/.env.example frontend/.env.local
+cp backend/.env.example backend/.env
+npm run dev
+```
 
-1. Use Node.js 20.9 or newer.
-2. Copy `.env.example` to `.env.local` and set the Supabase URL and publishable key.
-3. Run `npm install`, then `npm run dev`.
+Run the API separately with `npm run dev:api`.
 
-Never put a Supabase secret/service-role key in a `NEXT_PUBLIC_` variable or commit it to Git.
+## Vercel frontend
 
-## Database
+Import `BSMbennet/SpazaLink`, set Root Directory to `frontend`, and configure:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `NEXT_PUBLIC_API_URL`
 
-The live Supabase project has four migrations applied. The SQL migration files from the initial build snapshot still need to be mirrored into this repository; do not treat this repository as a complete database restore until those scripts are added. Do not edit an applied migration; add a new migration for every schema change.
+Build command: `npm run build`.
 
-## Security notes
+## Render backend
 
-- Browser-supplied metadata never grants privileged roles. Seller and agent requests require administrator review.
-- Order/payment writes are server-only at this stage. Do not add browser-side payment success logic.
-- Online payments are intentionally unimplemented pending final provider approval.
-- Cash payment confirmation must be recorded server-side with actor and timestamp.
-- Seller verification is an internal platform check, not legal registration or government approval.
+Use `render.yaml` or create a Docker web service with:
+- Docker context: `backend`
+- Dockerfile: `backend/Dockerfile`
+- Health check: `/health`
+- Environment variables: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `FRONTEND_ORIGIN`
 
-## Infrastructure
+The API uses the Supabase publishable/anon key and forwards authenticated callers' access tokens so database Row Level Security remains in force. Never place a service-role key in the browser or public API.
 
-- Supabase project: `spazalink-production`
-- Project ref: `cnkfehrftjvknrohayna`
-- Region: São Paulo (`sa-east-1`)
-- Project URL: `https://cnkfehrftjvknrohayna.supabase.co`
+## Payments and WhatsApp
+
+A payment provider has not yet been approved for implementation. Paystack was suggested for consideration, but payment code remains intentionally absent until confirmed. WhatsApp Cloud API remains a Phase 2 feature.
+
+## Verification status
+
+The existing five domain-rule tests passed in the local foundation package. The full monorepo install, type checks, lint, production builds, and live deployment still need to be run with npm registry access and deployment environment variables. Do not treat deployment configuration as proof of a live deployment.
