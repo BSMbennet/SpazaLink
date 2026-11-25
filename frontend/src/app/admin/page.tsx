@@ -22,7 +22,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
   const [roleResult, documentResult, shopResult] = await Promise.all([
     supabase.from('role_requests').select('id,user_id,requested_role,status,created_at').eq('status','pending').order('created_at',{ascending:true}).limit(100),
     supabase.from('seller_verification_documents').select('id,user_id,document_type,object_path,status,submitted_at').eq('status','pending').order('submitted_at',{ascending:true}).limit(100),
-    supabase.from('shops').select('id,owner_id,name,description,phone,address_text,area,status,verification_status,created_at').eq('verification_status','pending').order('created_at',{ascending:true}).limit(100),
+    supabase.from('shops').select('id,owner_id,name,description,phone,address_text,area,status,verification_status,created_at').in('verification_status',['pending','rejected']).order('created_at',{ascending:true}).limit(100),
   ]);
   const roleRequests = roleResult.data ?? [];
   const documents = documentResult.data ?? [];
@@ -39,7 +39,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
   const messages: Record<string,string> = {
     updated: 'Review saved successfully.',
     invalid: 'The submitted review details were invalid.',
-    failed: 'The review could not be saved. Refresh and try again.',
+    failed: 'The review could not be saved. Check that the seller has an approved verification document before approving the shop, then refresh.',
   };
 
   return <main className="page-shell">
