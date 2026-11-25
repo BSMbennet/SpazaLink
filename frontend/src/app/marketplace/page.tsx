@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { AddToCartButton } from '@/components/add-to-cart-button';
 import { CartLink } from '@/components/cart-link';
 import { createClient } from '@/lib/supabase/server';
@@ -42,9 +43,9 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
       const photoUrl = product.photo_path ? supabase.storage.from('shop-assets').getPublicUrl(product.photo_path).data.publicUrl : null;
       const shopPhotoUrl = shop?.photo_path ? supabase.storage.from('shop-assets').getPublicUrl(shop.photo_path).data.publicUrl : null;
       return <article className="product-card" key={product.id}>
-        {photoUrl ? <img className="market-product-photo" src={photoUrl} alt={product.name} loading="lazy"/> : <div className="product-placeholder">{product.name.slice(0, 1).toUpperCase()}</div>}
+        {photoUrl ? <Image className="market-product-photo" src={photoUrl} alt={product.name} width={640} height={320} unoptimized/> : <div className="product-placeholder">{product.name.slice(0, 1).toUpperCase()}</div>}
         <div className="product-content">
-          <div className="market-shop-line">{shopPhotoUrl && <img src={shopPhotoUrl} alt="" loading="lazy"/>}<p className="muted-small">{shop?.name} · {shop?.area}</p></div>
+          <div className="market-shop-line">{shopPhotoUrl && <Image src={shopPhotoUrl} alt="" width={40} height={40} unoptimized/>}<p className="muted-small">{shop?.name} · {shop?.area}</p></div>
           <h2>{product.name}</h2><p className="price">R {Number(product.price).toFixed(2)}</p><p className="muted-small">{product.stock_quantity} available</p>
           <AddToCartButton productId={product.id} productName={product.name} price={Number(product.price)} stock={product.stock_quantity} shopId={shop?.id ?? ''} shopName={shop?.name ?? 'Local shop'} deliveryFee={Number(shop?.delivery_fee ?? 0)} offersCollection={shop?.offers_collection ?? true} offersDelivery={shop?.offers_delivery ?? false}/>
         </div>
