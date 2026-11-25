@@ -16,7 +16,7 @@ type Props = {
 };
 
 export function AddToCartButton({ productId, productName, price, stock, shopId, shopName, deliveryFee, offersCollection, offersDelivery }: Props) {
-  const { addItem, ready } = useCart();
+  const { addItem } = useCart();
   const [message, setMessage] = useState('');
   function add() {
     const added = addItem({
@@ -33,5 +33,5 @@ export function AddToCartButton({ productId, productName, price, stock, shopId, 
     });
     setMessage(added ? 'Added to cart' : 'Your cart already has items from another shop. Finish or clear that cart first.');
   }
-  return <div className="add-cart-control"><button className="button button-primary" type="button" disabled={!ready || stock < 1} onClick={add}>Add to cart</button>{message && <p className="muted-small" role="status">{message}</p>}</div>;
+  return <div className="add-cart-control"><button className="button button-primary" type="button" disabled={stock < 1} onClick={add}>Add to cart</button>{message && <p className="muted-small" role="status">{message}</p>}</div>;
 }
