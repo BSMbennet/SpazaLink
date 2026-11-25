@@ -16,7 +16,7 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
     : '';
   const supabase = await createClient();
   let productsQuery = supabase.from('products')
-    .select('id,name,description,price,stock_quantity,photo_path,category_id,shops!inner(id,name,area,status,photo_path)')
+    .select('id,name,description,price,stock_quantity,photo_path,category_id,shops!inner(id,name,area,status,photo_path,offers_collection,offers_delivery,delivery_fee)')
     .eq('is_active', true).eq('shops.status', 'active').gt('stock_quantity', 0)
     .order('created_at', { ascending: false }).limit(60);
   if (search) productsQuery = productsQuery.ilike('name', `%${search}%`);
@@ -46,7 +46,7 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
         <div className="product-content">
           <div className="market-shop-line">{shopPhotoUrl && <img src={shopPhotoUrl} alt="" loading="lazy"/>}<p className="muted-small">{shop?.name} · {shop?.area}</p></div>
           <h2>{product.name}</h2><p className="price">R {Number(product.price).toFixed(2)}</p><p className="muted-small">{product.stock_quantity} available</p>
-          <AddToCartButton productId={product.id} productName={product.name} price={Number(product.price)} stock={product.stock_quantity} shopId={shop?.id ?? ''} shopName={shop?.name ?? 'Local shop'}/>
+          <AddToCartButton productId={product.id} productName={product.name} price={Number(product.price)} stock={product.stock_quantity} shopId={shop?.id ?? ''} shopName={shop?.name ?? 'Local shop'} deliveryFee={Number(shop?.delivery_fee ?? 0)} offersCollection={shop?.offers_collection ?? true} offersDelivery={shop?.offers_delivery ?? false}/>
         </div>
       </article>;
     })}</div> : <div className="empty-state"><span className="feature-icon">⌕</span><h2>{search || area || categoryId ? 'No matching products found.' : 'Your local marketplace is getting ready.'}</h2><p>{search || area || categoryId ? 'Try a different product name, area or category.' : 'When pilot sellers publish their products, you will see them here.'}</p></div>}
