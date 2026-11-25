@@ -6,7 +6,7 @@ South African neighbourhood marketplace pilot, starting in Thohoyandou, Limpopo.
 
 - `frontend/` — Next.js App Router PWA. Configure Vercel **Root Directory** as `frontend`.
 - `backend/` — Fastify TypeScript API. Deploy to Render from `backend/Dockerfile` or use the root `render.yaml` blueprint.
-- `supabase/migrations/` — database migrations. Migrations 002–004 are mirrored here; migration 001 (the initial schema) is included in the complete project bundle but still needs to be committed here before this repository alone can restore a fresh database.
+- `supabase/migrations/` — timestamped Supabase CLI migrations. The applied migration history is `20261125221630`, `20261125221748`, `20261125221941`, and `20261125222006`. Only the last three migration SQL files are currently mirrored here; the initial schema SQL is still missing from GitHub, so a clean database restore from this repository is not yet possible.
 
 ## Local development
 
@@ -26,6 +26,7 @@ Run the API separately with `npm run dev:api`.
 Import `BSMbennet/SpazaLink`, set Root Directory to `frontend`, and configure:
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+- `NEXT_PUBLIC_APP_URL` (the deployed Vercel origin, used in email confirmation redirects)
 - `NEXT_PUBLIC_API_URL`
 
 Build command: `npm run build`.
@@ -46,4 +47,4 @@ A payment provider has not yet been approved for implementation. Paystack was su
 
 ## Verification status
 
-The existing five domain-rule tests passed in the local foundation package. The full monorepo install, type checks, lint, production builds, and live deployment still need to be run with npm registry access and deployment environment variables. Do not treat deployment configuration as proof of a live deployment.
+Eight lightweight domain/API contract tests pass locally. Dependency installation timed out in the build environment, so TypeScript, lint, production builds and live service checks remain unverified. No lockfile is committed yet. Do not treat deployment configuration as proof of a live deployment.
