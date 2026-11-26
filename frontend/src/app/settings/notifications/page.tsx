@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { saveWhatsAppConsent } from '@/app/actions/whatsapp';
 import { createClient } from '@/lib/supabase/server';
