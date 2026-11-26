@@ -22,6 +22,7 @@ export default async function DashboardPage() {
       {profile?.role === 'seller' && <article className="feature-card"><span className="feature-icon">▤</span><h2>Seller workspace</h2><p>Manage your shop details, product listings and stock.</p><Link href="/seller/shop" className="text-link">Open seller workspace →</Link><p><Link href="/seller/orders" className="text-link">Manage orders →</Link></p><p><Link href="/seller/verification" className="text-link">Verification documents →</Link></p></article>}
       {profile?.role === 'admin' && <article className="feature-card"><span className="feature-icon">✓</span><h2>Administration</h2><p>Review seller and agent applications, private documents and shop listings.</p><Link href="/admin" className="text-link">Open verification queue →</Link></article>}
     </section>
+    <p className="form-foot"><Link href="/settings/notifications" className="text-link">Manage WhatsApp notifications →</Link></p>
     <p className="muted-small">Selecting seller or agent during sign-up submits a request. It does not grant permissions until reviewed by an administrator.</p>
   </main>;
 }
