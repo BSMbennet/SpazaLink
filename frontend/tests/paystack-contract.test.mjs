@@ -39,3 +39,8 @@ test('seller cannot accept an online order before verified payment', () => {
 test('browser return does not treat a redirect as payment proof', () => {
   assert.ok(callback.includes('Returning to this page does not by itself mean the payment succeeded'));
 });
+
+test('Paystack setup errors identify the missing server configuration clearly', () => {
+  assert.ok(action.includes("if (!secretKey) return { ok: false, message: 'Paystack is not connected yet."));
+  assert.ok(action.includes("if (!siteUrl) return { ok: false, message: 'Online checkout is missing the SpazaLink website address."));
+});
