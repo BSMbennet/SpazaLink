@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 const QUICK_FIND = ['Kota', 'Bread', 'Drinks', 'Groceries'];
@@ -28,7 +29,7 @@ export default function HomePage() {
             <li>Collection or seller delivery</li>
           </ul>
         </div>
-        <div className="hero-art"><img src="/images/SpazaLink_ Thohoyandou Grows Together.png" alt="SpazaLink neighbourhood market in Thohoyandou" fetchPriority="high" /></div>
+        <div className="hero-art"><Image src="/images/SpazaLink_ Thohoyandou Grows Together.png" alt="SpazaLink neighbourhood market in Thohoyandou" fill priority sizes="(max-width: 760px) calc(100vw - 36px), (max-width: 1160px) 45vw, 520px" style={{ objectFit: "cover", objectPosition: "65% center" }} /></div>
       </section>
 
       <section className="quick-find" aria-labelledby="quick-find-title">
