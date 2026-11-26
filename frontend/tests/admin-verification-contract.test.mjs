@@ -47,5 +47,7 @@ test('verification uploads are restricted by size and content type on the server
   assert.match(actions, /file\.size > 4 \* 1024 \* 1024/);
   assert.match(actions, /application\/pdf/);
   assert.match(actions, /image\/webp/);
-  assert.match(actions, /upsert: false/);
+  assert.match(actions, /uploadR2Object\(path, file\)/);
+  assert.match(actions, /deleteR2Object\(path\)/);
+  assert.doesNotMatch(actions, /supabase\.storage/);
 });
