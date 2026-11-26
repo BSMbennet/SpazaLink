@@ -6,6 +6,17 @@ type PageProps = { searchParams: Promise<{ notice?: string }> };
 
 const money = (value: number | string) => `R ${Number(value).toFixed(2)}`;
 
+function orderStatusLabel(status: string, fulfillment: string): string {
+  if (status === 'placed') return 'New order';
+  if (status === 'accepted') return 'Confirmed';
+  if (status === 'ready') return fulfillment === 'collection' ? 'Ready for collection' : 'Ready for delivery';
+  if (status === 'collected') return 'Collected';
+  if (status === 'delivered') return 'Delivered';
+  if (status === 'cancelled') return 'Cancelled';
+  if (status === 'refunded') return 'Refunded';
+  return status;
+}
+
 export default async function SellerOrdersPage({ searchParams }: PageProps) {
   const { notice } = await searchParams;
   const supabase = await createClient();
@@ -42,7 +53,7 @@ export default async function SellerOrdersPage({ searchParams }: PageProps) {
         const shop = Array.isArray(order.shops) ? order.shops[0] : order.shops;
         const items = Array.isArray(order.order_items) ? order.order_items : [];
         return <article className="feature-card" key={order.id}>
-          <div className="order-status-row"><span className="status-pill">#{order.order_number} · {order.status}</span><span className="status-pill">{order.payment_status === 'cash_due' ? 'Cash due' : order.payment_status}</span></div>
+          <div className="order-status-row"><span className="status-pill">#{order.order_number} · {orderStatusLabel(order.status, order.fulfillment)}</span><span className="status-pill">{order.payment_status === 'cash_due' ? 'Cash due' : order.payment_status}</span></div>
           <h2>{shop?.name ?? 'Your shop'}</h2>
           <p className="muted-small">{new Date(order.created_at).toLocaleString('en-ZA')} · {order.fulfillment === 'collection' ? 'Collection' : 'Seller delivery'}</p>
           <div className="order-items">{items.map((item) => <div className="order-item" key={item.id}><span>{item.product_name_snapshot} × {item.quantity}</span><strong>{money(item.line_total)}</strong></div>)}</div>
