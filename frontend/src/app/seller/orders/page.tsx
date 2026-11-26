@@ -34,8 +34,7 @@ export default async function SellerOrdersPage({ searchParams }: PageProps) {
   };
 
   return <main className="page-shell">
-    <header className="topbar"><Link href="/" className="brand-mark">Spaza<span>Link</span></Link><Link href="/dashboard" className="text-link">Dashboard</Link></header>
-    <section className="section-heading"><p className="eyebrow">Seller workspace</p><h1>Orders</h1><p className="muted">Accept orders, prepare them, and record cash only after handover.</p></section>
+<section className="section-heading"><p className="eyebrow">Seller workspace</p><h1>Orders</h1><p className="muted">Accept orders, prepare them, and record cash only after handover.</p></section>
     {notice && messages[notice] && <p className="notice" role="status">{messages[notice]}</p>}
     {error && <p className="notice">Orders could not be loaded. Please refresh.</p>}
     {!error && (!orders || orders.length === 0) && <section className="auth-card"><h2>No orders yet</h2><p className="muted">New customer orders will appear here.</p></section>}
