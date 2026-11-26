@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const migration = readFileSync(new URL('../../supabase/migrations/20261125235521_phase_f_paystack_online_checkout.sql', import.meta.url), 'utf8');
-const gate = readFileSync(new URL('../../supabase/migrations/20261125235713_phase_f_require_verified_payment_before_seller_acceptance.sql', import.meta.url), 'utf8');
+const gate = readFileSync(new URL('../../supabase/migrations/20261126000240_phase_f_allow_seller_reject_of_unpaid_online_order.sql', import.meta.url), 'utf8');
 const action = readFileSync(new URL('../src/app/actions/orders.ts', import.meta.url), 'utf8');
 const backend = readFileSync(new URL('../../backend/src/server.ts', import.meta.url), 'utf8');
 const callback = readFileSync(new URL('../src/app/payments/paystack/callback/page.tsx', import.meta.url), 'utf8');
@@ -32,6 +32,7 @@ test('webhook verifies raw body signature and verifies the transaction with Pays
 
 test('seller cannot accept an online order before verified payment', () => {
   assert.ok(gate.includes('ONLINE_PAYMENT_NOT_CONFIRMED'));
+  assert.ok(gate.includes("p_action in ('accept','ready','complete')"));
   assert.ok(gate.includes("v_order.payment_status <> 'paid'"));
 });
 
