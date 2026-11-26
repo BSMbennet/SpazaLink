@@ -12,8 +12,6 @@ export function CartClient() {
   const [message, setMessage] = useState('');
   const [pending, startTransition] = useTransition();
   const shop = items[0];
-  const fulfillment = 'collection';
-  const deliveryFee = 0;
   const total = subtotal;
 
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -59,10 +57,10 @@ export function CartClient() {
         <input type="hidden" name="fulfillment" value="collection"/>
         <label>Note to seller (optional)<textarea name="buyerNote" maxLength={500} rows={2} placeholder="Any useful order details"/></label>
         <p className="muted-small">Payment: cash when you collect your order. The seller confirms cash received after handover.</p>
-        <div className="checkout-totals"><div><span>Items subtotal</span><strong>R {subtotal.toFixed(2)}</strong></div><div><span>Delivery fee</span><strong>R {deliveryFee.toFixed(2)}</strong></div><div className="checkout-total"><span>Total due</span><strong>R {total.toFixed(2)}</strong></div></div>
+        <div className="checkout-totals"><div><span>Items subtotal</span><strong>R {subtotal.toFixed(2)}</strong></div><div className="checkout-total"><span>Total due</span><strong>R {total.toFixed(2)}</strong></div></div>
         <p className="muted-small">Cash is not marked as paid until the seller confirms receipt.</p>
         {message && <p className="notice" role="alert">{message}</p>}
-        <button className="button button-primary" type="submit" disabled={pending || !shop?.offers_collection && !shop?.offers_delivery}>{pending ? 'Placing order…' : 'Place cash order'}</button>
+        <button className="button button-primary" type="submit" disabled={pending || !shop?.offers_collection}>{pending ? 'Placing order…' : 'Place cash order'}</button>
       </form>
     </section>
   </div>;
