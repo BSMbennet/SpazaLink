@@ -455,28 +455,25 @@ img { max-width: 100%; }
   .hours-row > strong { grid-column: 1; }
 }
 
-/* Shared navigation */
-.site-header{position:sticky;top:0;z-index:30;background:var(--surface);background:color-mix(in srgb,var(--surface) 90%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-.site-header-inner{max-width:1120px;min-height:76px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:22px}
-.site-header .brand-mark{flex:0 0 auto}
-.site-nav{display:flex;align-items:center;justify-content:center;gap:clamp(12px,2vw,25px);min-width:0}
-.site-nav a,.site-account-link{font-size:.9rem;font-weight:750;color:var(--ink);white-space:nowrap}
-.site-nav a:hover,.site-account-link:hover{color:var(--green)}
-.site-nav-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex:0 0 auto}
-.site-nav-actions form{margin:0}
-.site-nav-actions .button{min-height:40px;padding:0 13px;font-size:.84rem}
-.site-signup{white-space:nowrap}
-.site-signout{white-space:nowrap}
-.seller-management{margin:0 0 28px}
-.seller-management-heading h2{margin:0 0 5px;font-size:1.35rem;letter-spacing:-.03em}
-.seller-management-heading p{margin:0 0 16px;color:var(--muted);font-size:.92rem}
-.seller-management-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
-.seller-management-card{display:flex;flex-direction:column;align-items:flex-start;gap:9px;min-height:210px;padding:19px;background:var(--surface,#fff);border:1px solid var(--line);border-radius:16px;transition:border-color .15s ease,transform .15s ease}
-.seller-management-card:hover{border-color:var(--green);transform:translateY(-2px)}
-.seller-management-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:11px;background:var(--surface-2,#eaf1e8);color:var(--green);font-size:1.3rem;font-weight:900}
-.seller-management-card strong{font-size:1rem}
-.seller-management-card>span:not(.seller-management-icon){font-size:.84rem;line-height:1.5;color:var(--muted)}
-.seller-management-card em{margin-top:auto;font-size:.84rem;font-style:normal;font-weight:850;color:var(--green)}
-@media(max-width:1000px){.site-header-inner{flex-wrap:wrap;gap:10px 18px}.site-nav{order:3;width:100%;justify-content:flex-start;overflow-x:auto;padding:4px 0 7px}.site-nav-actions{margin-left:auto}.seller-management-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:560px){.site-header-inner{padding:10px 16px;min-height:0}.site-header .brand-mark{font-size:1.25rem}.site-nav{gap:18px}.site-nav a{font-size:.84rem}.site-nav-actions{gap:7px}.site-nav-actions .button{min-height:36px;padding:0 10px;font-size:.78rem}.site-account-link{font-size:.82rem}.site-signout{display:none}.seller-management-grid{grid-template-columns:1fr}.seller-management-card{min-height:0}}
-
+/* Shared navigation reuses the existing SpazaLink topbar and nav-actions styles. */
+.site-header { width: 100%; }
+.site-header-inner {
+  width: 100%;
+  max-width: 1120px;
+  min-height: 68px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+.site-nav { flex: 1 1 auto; min-width: 0; justify-content: center; }
+.site-nav-actions { flex: 0 0 auto; }
+.site-nav-actions form { margin: 0; }
+@media (max-width: 760px) {
+  .site-header-inner { flex-wrap: wrap; gap: 0 12px; padding: 8px 16px; }
+  .site-nav { order: 3; width: 100%; justify-content: flex-start; overflow-x: auto; white-space: nowrap; }
+  .site-nav > a:first-child, .site-nav-actions > a:first-child { display: inline-flex; }
+  .site-nav-actions { margin-left: auto; gap: 8px; }
+}
