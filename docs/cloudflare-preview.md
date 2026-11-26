@@ -5,21 +5,21 @@ This configuration is for an isolated **preview Worker** named `spazalink-previe
 ## Cloudflare Workers Builds settings
 
 - Repository: `BSMbennet/SpazaLink`
-- Production branch: do not change it to `main` for a live launch. Use a dedicated preview branch/build while evaluating this setup.
-- Root directory: `frontend`
+- Production branch: do not change it to `main` for a live launch. Use the dedicated preview branch `chore/cloudflare-opennext-preview` while evaluating this setup.
+- Root directory: leave blank (the repository root). Do not set it to `frontend`; this is an npm-workspaces monorepo and the root install must see both workspace folders.
 - Build command:
 
 ```sh
-npm install --no-save --package-lock=false @opennextjs/cloudflare@1.20.19 wrangler@4.168.0 && npx @opennextjs/cloudflare build
+npm install --no-save --package-lock=false @opennextjs/cloudflare@1.20.19 wrangler@4.168.0 && cd frontend && npx @opennextjs/cloudflare build
 ```
 
 - Deploy command:
 
 ```sh
-npx @opennextjs/cloudflare deploy
+cd frontend && npx @opennextjs/cloudflare deploy
 ```
 
-The adapter and Wrangler are pinned in these commands because this repository is an npm-workspaces monorepo and the one-time migration previously timed out while attempting to rewrite dependencies at the repository root. This keeps the existing root lockfile and application dependencies untouched for the preview setup.
+The previous attempt set the root directory to `frontend`. The log showed npm could not find the declared workspace folder, and the adapter was installed outside the frontend's module-resolution path. Running the install from the repository root makes the package available in the root `node_modules`, which the frontend config can resolve; the build and deploy then run from `frontend` where the OpenNext config and Wrangler file live. The install does not save dependency or lockfile changes.
 
 ## First preview safety checks
 
