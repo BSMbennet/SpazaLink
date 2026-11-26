@@ -24,9 +24,10 @@ async function uploadSellerImage(
   };
   const extension = extensions[file.type];
   if (!extension || file.size > 2 * 1024 * 1024) return null;
-  const path = `${userId}/${folder}/${crypto.randomUUID()}.${extension}`;
+  // Photos are re-saved as small WebP files without GPS data, so the stored name ends in .webp.
+  const path = `${userId}/${folder}/${crypto.randomUUID()}.webp`;
   try {
-    await uploadR2Object(path, file);
+    await uploadR2Object(path, file, { optimiseImage: true });
     return path;
   } catch {
     return null;

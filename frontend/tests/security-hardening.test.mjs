@@ -30,7 +30,8 @@ test('upload check rejects scripts, HTML, SVG and empty or tiny files pretending
 test('R2 upload compares file content with the claimed type and stores the detected type', () => {
   assert.ok(r2.includes('sniffFileType'));
   assert.ok(r2.includes('detected !== file.type'));
-  assert.ok(r2.includes('ContentType: detected'));
+  assert.ok(r2.includes('ContentType: contentType'));
+  assert.ok(r2.includes('optimiseImage'));
   assert.ok(r2.includes('private, max-age=3600'));
 });
 
