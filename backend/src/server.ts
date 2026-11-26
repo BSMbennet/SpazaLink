@@ -13,6 +13,13 @@ const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN;
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 const PAYSTACK_WEBHOOK_SECRET = process.env.PAYSTACK_WEBHOOK_SECRET;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
+const WHATSAPP_PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
+const WHATSAPP_GRAPH_API_VERSION = process.env.WHATSAPP_GRAPH_API_VERSION;
+const WHATSAPP_TEMPLATE_NAME = process.env.WHATSAPP_TEMPLATE_NAME;
+const WHATSAPP_TEMPLATE_LANGUAGE = process.env.WHATSAPP_TEMPLATE_LANGUAGE ?? 'en';
+const WHATSAPP_WEBHOOK_VERIFY_TOKEN = process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN;
+const META_APP_SECRET = process.env.META_APP_SECRET;
 if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) throw new Error('SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY are required');
 
 const app = Fastify({ logger: true, trustProxy: true, bodyLimit: 1_048_576 });
@@ -157,6 +164,144 @@ app.post('/v1/webhooks/paystack', async (request, reply) => {
     return reply.code(422).send({ error: 'Payment could not be matched to an order' });
   }
   return reply.code(200).send({ received: true, verified: true });
+});
+
+
+
+function serviceSupabase(): SupabaseClient | null {
+  if (!SUPABASE_SERVICE_ROLE_KEY) return null;
+  return createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
+
+async function sendWhatsAppText(to: string, body: string): Promise<boolean> {
+  if (!WHATSAPP_ACCESS_TOKEN || !WHATSAPP_PHONE_NUMBER_ID || !WHATSAPP_GRAPH_API_VERSION) return false;
+  const response = await fetch('https://graph.facebook.com/' + WHATSAPP_GRAPH_API_VERSION + '/' + WHATSAPP_PHONE_NUMBER_ID + '/messages', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + WHATSAPP_ACCESS_TOKEN, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to, type: 'text', text: { preview_url: false, body } }),
+    cache: 'no-store',
+  });
+  if (!response.ok) app.log.error({ status: response.status }, 'WhatsApp text message failed');
+  return response.ok;
+}
+
+async function notifyWhatsAppOrder(service: SupabaseClient, orderId: string, eventLabel: string): Promise<void> {
+  if (!WHATSAPP_ACCESS_TOKEN || !WHATSAPP_PHONE_NUMBER_ID || !WHATSAPP_GRAPH_API_VERSION || !WHATSAPP_TEMPLATE_NAME) return;
+  const { data: order, error } = await service.from('orders')
+    .select('id,order_number,buyer_id,shops!inner(owner_id)').eq('id', orderId).maybeSingle();
+  if (error || !order) return;
+  const relation = order.shops as unknown as { owner_id: string } | Array<{ owner_id: string }>;
+  const shop = Array.isArray(relation) ? relation[0] : relation;
+  if (!shop?.owner_id) return;
+  const recipients = [...new Set([order.buyer_id, shop.owner_id])];
+  const { data: consents } = await service.from('whatsapp_consents')
+    .select('user_id,phone_e164,opted_in').in('user_id', recipients).eq('opted_in', true);
+  for (const consent of consents ?? []) {
+    if (!consent.phone_e164) continue;
+    const isSeller = consent.user_id === shop.owner_id;
+    const link = (FRONTEND_ORIGIN ?? '').replace(/\\/$/, '') + (isSeller ? '/seller/orders' : '/orders/' + order.id);
+    const response = await fetch('https://graph.facebook.com/' + WHATSAPP_GRAPH_API_VERSION + '/' + WHATSAPP_PHONE_NUMBER_ID + '/messages', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + WHATSAPP_ACCESS_TOKEN, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        recipient_type: 'individual',
+        to: consent.phone_e164.replace(/^\\+/, ''),
+        type: 'template',
+        template: {
+          name: WHATSAPP_TEMPLATE_NAME,
+          language: { code: WHATSAPP_TEMPLATE_LANGUAGE },
+          components: [{ type: 'body', parameters: [
+            { type: 'text', text: String(order.order_number) },
+            { type: 'text', text: eventLabel.slice(0, 120) },
+            { type: 'text', text: link },
+          ] }],
+        },
+      }),
+      cache: 'no-store',
+    });
+    if (!response.ok) app.log.error({ status: response.status }, 'WhatsApp order template delivery failed');
+  }
+}
+
+app.post('/v1/notifications/whatsapp/order', async (request, reply) => {
+  const auth = await authenticated(request, reply);
+  if (!auth) return;
+  const body = request.body as { orderId?: string; event?: string };
+  if (typeof body.orderId !== 'string' || !/^[0-9a-f-]{36}$/i.test(body.orderId) ||
+      typeof body.event !== 'string' || body.event.length < 2 || body.event.length > 120) {
+    return reply.code(400).send({ error: 'Invalid notification request' });
+  }
+  const service = serviceSupabase();
+  if (!service) return reply.code(503).send({ error: 'WhatsApp notifications are not configured' });
+  const { data: order } = await service.from('orders')
+    .select('buyer_id,shops!inner(owner_id)').eq('id', body.orderId).maybeSingle();
+  if (!order) return reply.code(404).send({ error: 'Order not found' });
+  const relation = order.shops as unknown as { owner_id: string } | Array<{ owner_id: string }>;
+  const shop = Array.isArray(relation) ? relation[0] : relation;
+  if (auth.user.id !== order.buyer_id && auth.user.id !== shop?.owner_id) {
+    return reply.code(403).send({ error: 'Order participant access required' });
+  }
+  await notifyWhatsAppOrder(service, body.orderId, body.event);
+  return reply.code(202).send({ accepted: true });
+});
+
+app.get('/v1/webhooks/whatsapp', async (request, reply) => {
+  const query = request.query as Record<string, string | undefined>;
+  if (query['hub.mode'] === 'subscribe' && query['hub.verify_token'] === WHATSAPP_WEBHOOK_VERIFY_TOKEN && query['hub.challenge']) {
+    return reply.type('text/plain').send(query['hub.challenge']);
+  }
+  return reply.code(403).send('Forbidden');
+});
+
+app.post('/v1/webhooks/whatsapp', async (request, reply) => {
+  const rawBody = (request as RawBodyRequest).rawBody;
+  const signature = request.headers['x-hub-signature-256'];
+  if (!rawBody || typeof signature !== 'string' || !META_APP_SECRET || !/^sha256=[0-9a-f]{64}$/.test(signature)) {
+    return reply.code(401).send({ error: 'Invalid Meta webhook signature' });
+  }
+  const expected = createHmac('sha256', META_APP_SECRET).update(rawBody).digest();
+  const received = Buffer.from(signature.slice(7), 'hex');
+  if (received.length !== expected.length || !timingSafeEqual(expected, received)) {
+    return reply.code(401).send({ error: 'Invalid Meta webhook signature' });
+  }
+  const service = serviceSupabase();
+  if (!service) return reply.code(503).send({ error: 'WhatsApp webhook is not configured' });
+  const payload = request.body as {
+    entry?: Array<{ changes?: Array<{ value?: { messages?: Array<{ from?: string; type?: string; text?: { body?: string } }> } }> }>;
+  };
+  for (const entry of payload.entry ?? []) {
+    for (const change of entry.changes ?? []) {
+      for (const message of change.value?.messages ?? []) {
+        if (!message.from || message.type !== 'text') continue;
+        const from = message.from.replace(/\\D/g, '');
+        const { data: consent } = await service.from('whatsapp_consents')
+          .select('user_id,opted_in').eq('phone_e164', '+' + from).eq('opted_in', true).maybeSingle();
+        if (!consent) continue;
+        const text = message.text?.body?.trim() ?? '';
+        const match = /^order\\s+#?(\\d+)$/i.exec(text);
+        if (match) {
+          const { data: order } = await service.from('orders')
+            .select('id,order_number,status,payment_status,buyer_id,shops!inner(owner_id,name)')
+            .eq('order_number', Number(match[1])).maybeSingle();
+          if (order) {
+            const shopRel = order.shops as unknown as { owner_id: string; name: string } | Array<{ owner_id: string; name: string }>;
+            const shop = Array.isArray(shopRel) ? shopRel[0] : shopRel;
+            if (order.buyer_id === consent.user_id || shop?.owner_id === consent.user_id) {
+              await sendWhatsAppText(from, 'SpazaLink order #' + order.order_number + ' (' + (shop?.name ?? 'local shop') + ') is ' + order.status + '. Payment: ' + order.payment_status + '.');
+              continue;
+            }
+          }
+          await sendWhatsAppText(from, 'We could not find that order for your account. Check the order number and try again.');
+        } else {
+          await sendWhatsAppText(from, 'Thanks for messaging SpazaLink. To check an order, reply with ORDER followed by its number, for example ORDER 104.');
+        }
+      }
+    }
+  }
+  return reply.code(200).send({ received: true });
 });
 
 app.setNotFoundHandler((_request, reply) => reply.code(404).send({ error: 'Route not found' }));
