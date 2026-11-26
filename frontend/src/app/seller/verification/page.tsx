@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { submitSellerVerificationDocument } from '@/app/actions/admin';
 import { createClient } from '@/lib/supabase/server';
