@@ -28,7 +28,7 @@ export default function HomePage() {
             <li>Collection or seller delivery</li>
           </ul>
         </div>
-        <div className="hero-art"><img src="/images/spazalink-hero.webp" alt="A neighbourhood spaza shop in Thohoyandou" fetchPriority="high" /></div>
+        <div className="hero-art"><img src="/images/SpazaLink_ Thohoyandou Grows Together.png" alt="SpazaLink neighbourhood market in Thohoyandou" fetchPriority="high" /></div>
       </section>
 
       <section className="quick-find" aria-labelledby="quick-find-title">
