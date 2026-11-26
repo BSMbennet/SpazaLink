@@ -8,6 +8,8 @@ const adminActions = readFileSync(new URL('../src/app/actions/admin.ts', import.
 const marketplace = readFileSync(new URL('../src/app/marketplace/page.tsx', import.meta.url), 'utf8');
 const consentMigration = readFileSync(new URL('../../supabase/migrations/20261125235921_phase_f_whatsapp_opt_in_consent.sql', import.meta.url), 'utf8');
 const consentFix = readFileSync(new URL('../../supabase/migrations/20261126000104_phase_f_fix_whatsapp_phone_validation.sql', import.meta.url), 'utf8');
+const optOutFix = readFileSync(new URL('../../supabase/migrations/20261126000502_phase_f_clear_whatsapp_number_on_opt_out.sql', import.meta.url), 'utf8');
+const rpcHardening = readFileSync(new URL('../../supabase/migrations/20261126000410_phase_f_harden_order_and_whatsapp_rpcs.sql', import.meta.url), 'utf8');
 const whatsappBackend = readFileSync(new URL('../../backend/src/server.ts', import.meta.url), 'utf8');
 const whatsappAction = readFileSync(new URL('../src/app/actions/whatsapp.ts', import.meta.url), 'utf8');
 
@@ -29,6 +31,9 @@ test('WhatsApp notifications require explicit user opt-in and support opt-out', 
   assert.ok(consentMigration.includes('set_whatsapp_consent'));
   assert.ok(consentFix.includes("^[+][1-9][0-9]{7,14}$"));
   assert.ok(whatsappAction.includes('p_opted_in: optedIn'));
+  assert.ok(optOutFix.includes('phone_e164=null,opted_in=false'));
+  assert.ok(rpcHardening.includes('alter function public.set_whatsapp_consent(text,boolean) set schema private'));
+  assert.ok(rpcHardening.includes('security invoker'));
   assert.ok(whatsappBackend.includes("eq('opted_in', true)"));
 });
 
