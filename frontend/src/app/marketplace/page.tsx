@@ -42,11 +42,7 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
   const hasFilters = Boolean(search || area || categoryId);
 
   return <main className="page-shell">
-    <header className="topbar">
-      <Link href="/" className="brand-mark">Spaza<span>Link</span></Link>
-      <nav className="nav-actions" aria-label="Main"><Link href="/dashboard" className="button button-quiet">My account</Link><CartLink/></nav>
-    </header>
-    <section className="section-heading">
+<section className="section-heading">
       <p className="eyebrow">Thohoyandou pilot</p>
       <h1>Shop close to home.</h1>
       <p className="muted">Products from sellers in your neighbourhood.</p>
