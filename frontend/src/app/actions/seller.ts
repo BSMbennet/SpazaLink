@@ -172,7 +172,7 @@ export async function updateProduct(formData: FormData) {
     name, description: description || null, price, stock_quantity: stockQuantity, category_id: categoryId,
   };
   if (photoFile) {
-    const photoPath = await uploadSellerImage(supabase, userId, photoFile, 'products');
+    const photoPath = await uploadSellerImage(userId, photoFile, 'products');
     if (!photoPath) message('/seller/products', 'Photo upload failed. Use a JPG, PNG or WebP image smaller than 2 MB.');
     updates.photo_path = photoPath;
   }
