@@ -29,24 +29,15 @@ export default async function SellerShopPage({ searchParams }: PageProps) {
   const { data: shopHours } = shop
     ? await supabase.from('shop_hours').select('weekday,opens_at,closes_at,is_closed').eq('shop_id', shop.id).order('weekday')
     : { data: [] };
-  const shopPhotoUrl = shop?.photo_path ? await signedR2ObjectUrl(shop.photo_path) : null;
+  let shopPhotoUrl: string | null = null;\n  if (shop?.photo_path) {\n    try {\n      shopPhotoUrl = await signedR2ObjectUrl(shop.photo_path);\n    } catch (error) {\n      // A preview deployment may not have R2 credentials. Keep shop editing available\n      // even when the optional current-photo preview cannot be loaded.\n      if (!(error instanceof Error) || error.message !== "Cloudflare R2 environment variables are not configured") {\n        throw error;\n      }\n      console.warn("Shop photo preview is unavailable because R2 is not configured for this deployment.");\n    }\n  }
 
   return (
     <main className="page-shell">
 <section className="section-heading"><p className="eyebrow">Seller workspace</p><h1>{shop ? 'Your shop details' : 'Set up your shop'}</h1><p className="muted">Add the details buyers need to find and collect from your business.</p></section>
-      {shop && <section className="seller-management" aria-label="Shop management tools">
-        <div className="seller-management-heading"><h2>Manage your business</h2><p>Choose what you want to update. Your changes are saved in the relevant section.</p></div>
-        <div className="seller-management-grid">
-          <Link href="/seller/shop#shop-details" className="seller-management-card"><span className="seller-management-icon">⌂</span><strong>Shop information</strong><span>Update your name, photo, contact details, location, delivery options and opening hours.</span><em>Edit shop details →</em></Link>
-          <Link href="/seller/products" className="seller-management-card"><span className="seller-management-icon">▦</span><strong>Products and stock</strong><span>Add products, change prices, update stock, replace photos or pause listings.</span><em>Manage products →</em></Link>
-          <Link href="/seller/orders" className="seller-management-card"><span className="seller-management-icon">▤</span><strong>Customer orders</strong><span>Accept orders, prepare collections or deliveries and confirm completed handovers.</span><em>Manage orders →</em></Link>
-          <Link href="/seller/verification" className="seller-management-card"><span className="seller-management-icon">✓</span><strong>Seller verification</strong><span>View your verification status and manage the documents requested by SpazaLink.</span><em>View verification →</em></Link>
-        </div>
-      </section>}
       {message && <p className="notice" role="status">{message}</p>}
       {shop && <section className={`shop-status-panel ${shop.status === "active" && shop.verification_status === "approved" ? "shop-status-approved" : ""}`} aria-live="polite"><div><span className="shop-status-label">Shop status</span><strong>{shop.status === "active" ? "Active" : shop.status}</strong></div><div><span className="shop-status-label">Verification</span><strong>{shop.verification_status === "approved" ? "Approved" : shop.verification_status}</strong></div><p>{shop.status === "active" && shop.verification_status === "approved" ? "Your shop is approved and active. Keep your details and opening hours up to date so nearby customers know when and where to find you." : "Your shop will appear in public search once it is approved and active."}</p>{shop.verification_notes && <p className="shop-review-note">Review note: {shop.verification_notes}</p>}</section>}
       {shopPhotoUrl && <figure className="seller-shop-photo-wrap"><Image className="seller-shop-photo" src={shopPhotoUrl} alt={shop?.name ? `${shop.name} shop` : "Shop photo"} width={960} height={480} unoptimized/><figcaption>Current shop photo</figcaption></figure>}
-      <section id="shop-details" className="auth-card auth-card-wide shop-editor">
+      <section className="auth-card auth-card-wide shop-editor">
         <form action={saveShop} className="form-stack shop-form" encType="multipart/form-data">
           <div className="shop-form-section"><h2>Basic information</h2><p>Help customers recognise your business and get in touch.</p>
             <label className="shop-field"><span>Shop name</span><input name="name" required minLength={2} maxLength={100} defaultValue={shop?.name ?? ""}/></label>
