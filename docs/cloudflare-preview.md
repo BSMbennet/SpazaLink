@@ -10,7 +10,7 @@ This configuration is for an isolated **preview Worker** named `spazalink-previe
 - Build command:
 
 ```sh
-npm install --no-save --package-lock=false @opennextjs/cloudflare@1.20.19 wrangler@4.168.0 && npm install --no-save --package-lock=false @opennextjs/cloudflare@1.20.19 wrangler@4.168.0 && npx @opennextjs/cloudflare build
+npm install --no-save --package-lock=false @opennextjs/cloudflare@1.20.19 wrangler@4.168.0 && npx @opennextjs/cloudflare build
 ```
 
 - Deploy command:
