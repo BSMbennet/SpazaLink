@@ -83,7 +83,7 @@ export async function placeCashOrder(formData: FormData): Promise<OrderResult> {
 
 
 
-export async function startPaystackOrder(_formData: FormData): Promise<
+export async function startPaystackOrder(formData: FormData): Promise<
   | { ok: true; checkoutUrl: string }
   | { ok: false; message: string }
 > {
