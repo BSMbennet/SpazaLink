@@ -23,7 +23,7 @@ export default async function SellerShopPage({ searchParams }: PageProps) {
 
   if (profile?.role !== 'seller') {
     const pending = requests?.[0]?.status === 'pending';
-    return <main className="page-shell"><header className="topbar"><Link href="/" className="brand-mark">Spaza<span>Link</span></Link><Link href="/dashboard" className="text-link">My account</Link></header><section className="auth-card"><p className="eyebrow">Seller access</p><h1>{pending ? 'Your seller request is under review.' : 'Seller access is not active yet.'}</h1><p className="muted">Shop tools become available after an administrator approves your seller request. This protects the marketplace from unverified seller accounts.</p></section></main>;
+    return <main className="page-shell"><section className="auth-card"><p className="eyebrow">Seller access</p><h1>{pending ? 'Your seller request is under review.' : 'Seller access is not active yet.'}</h1><p className="muted">Shop tools become available after an administrator approves your seller request. This protects the marketplace from unverified seller accounts.</p></section></main>;
   }
 
   const { data: shopHours } = shop
