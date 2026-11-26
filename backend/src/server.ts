@@ -163,6 +163,8 @@ app.post('/v1/webhooks/paystack', async (request, reply) => {
     request.log.error({ reference, error }, 'Verified Paystack payment did not match an order');
     return reply.code(422).send({ error: 'Payment could not be matched to an order' });
   }
+  const { data: paymentOrder } = await service.from('payment_transactions').select('order_id').eq('reference', reference).maybeSingle();
+  if (paymentOrder?.order_id) await notifyWhatsAppOrder(service, paymentOrder.order_id, 'Payment received');
   return reply.code(200).send({ received: true, verified: true });
 });
 
