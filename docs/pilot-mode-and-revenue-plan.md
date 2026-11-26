@@ -11,6 +11,7 @@ This build is configured for the supervised Thohoyandou pilot only:
 - Online checkout and direct online-order database functions are disabled.
 - Seller delivery is disabled.
 - The SpazaLink platform fee is 0% for new pilot orders.
+- Password reset request and update screens are implemented. The reset email and confirmation flow still need a real-inbox test and the production redirect URL must be allowed in Supabase Auth settings.
 - Existing order records are not rewritten. They keep their original recorded totals and fees.
 - WhatsApp alerts are optional until a real end-to-end message test passes. Each participating seller must still have a named person checking orders and a phone fallback.
 
