@@ -11,7 +11,7 @@ export async function saveWhatsAppConsent(formData: FormData): Promise<void> {
 
   const optedIn = formData.get('optedIn') === 'on';
   const phone = String(formData.get('phone') ?? '').trim();
-  if (optedIn && !/^\\+[1-9][0-9]{7,14}$/.test(phone)) {
+  if (optedIn && !/^[+][1-9][0-9]{7,14}$/.test(phone)) {
     redirect('/settings/notifications?notice=invalid');
   }
   const { error: saveError } = await supabase.rpc('set_whatsapp_consent', {
