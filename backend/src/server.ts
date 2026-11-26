@@ -203,14 +203,14 @@ async function notifyWhatsAppOrder(service: SupabaseClient, orderId: string, eve
   for (const consent of consents ?? []) {
     if (!consent.phone_e164) continue;
     const isSeller = consent.user_id === shop.owner_id;
-    const link = (FRONTEND_ORIGIN ?? '').replace(/\\/$/, '') + (isSeller ? '/seller/orders' : '/orders/' + order.id);
+    const link = (FRONTEND_ORIGIN ?? '').replace(/[/]$/, '') + (isSeller ? '/seller/orders' : '/orders/' + order.id);
     const response = await fetch('https://graph.facebook.com/' + WHATSAPP_GRAPH_API_VERSION + '/' + WHATSAPP_PHONE_NUMBER_ID + '/messages', {
       method: 'POST',
       headers: { Authorization: 'Bearer ' + WHATSAPP_ACCESS_TOKEN, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         messaging_product: 'whatsapp',
         recipient_type: 'individual',
-        to: consent.phone_e164.replace(/^\\+/, ''),
+        to: consent.phone_e164.replace(/^[+]/, ''),
         type: 'template',
         template: {
           name: WHATSAPP_TEMPLATE_NAME,
@@ -278,12 +278,12 @@ app.post('/v1/webhooks/whatsapp', async (request, reply) => {
     for (const change of entry.changes ?? []) {
       for (const message of change.value?.messages ?? []) {
         if (!message.from || message.type !== 'text') continue;
-        const from = message.from.replace(/\\D/g, '');
+        const from = message.from.replace(/[^0-9]/g, '');
         const { data: consent } = await service.from('whatsapp_consents')
           .select('user_id,opted_in').eq('phone_e164', '+' + from).eq('opted_in', true).maybeSingle();
         if (!consent) continue;
         const text = message.text?.body?.trim() ?? '';
-        const match = /^order\\s+#?(\\d+)$/i.exec(text);
+        const match = /^order +#?([0-9]+)$/i.exec(text);
         if (match) {
           const { data: order } = await service.from('orders')
             .select('id,order_number,status,payment_status,buyer_id,shops!inner(owner_id,name)')
