@@ -33,8 +33,7 @@ export default async function OrderDetailPage({ params }: PageProps) {
   ]);
   const shop = Array.isArray(order.shops) ? order.shops[0] : order.shops;
   return <main className="page-shell">
-    <header className="topbar"><Link href="/" className="brand-mark">Spaza<span>Link</span></Link><Link href="/orders" className="text-link">All orders</Link></header>
-    <section className="section-heading"><p className="eyebrow">Order #{order.order_number}</p><h1>{shop?.name ?? 'Your local order'}</h1><p className="muted">{shop?.area}</p></section>
+<section className="section-heading"><p className="eyebrow">Order #{order.order_number}</p><h1>{shop?.name ?? 'Your local order'}</h1><p className="muted">{shop?.area}</p></section>
     <section className="auth-card auth-card-wide">
       <div className="order-status-row"><span className="status-pill">{order.status}</span><span className="status-pill">{order.payment_status === 'cash_due' ? 'Cash due' : order.payment_status}</span></div>
       <p>{order.fulfillment === 'collection' ? 'Collect from the shop' : 'Seller delivery'}</p>

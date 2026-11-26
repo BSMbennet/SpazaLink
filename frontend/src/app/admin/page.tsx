@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { reviewRoleRequest, reviewSellerDocument, reviewShop } from '@/app/actions/admin';
 import { createClient } from '@/lib/supabase/server';
@@ -45,8 +44,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
   };
 
   return <main className="page-shell">
-    <header className="topbar"><Link href="/" className="brand-mark">Spaza<span>Link</span></Link><Link href="/dashboard" className="text-link">Dashboard</Link></header>
-    <section className="section-heading"><p className="eyebrow">Administration</p><h1>Verification queue</h1><p className="muted">Review access requests, private seller documents and shop listings before they become available.</p></section>
+<section className="section-heading"><p className="eyebrow">Administration</p><h1>Verification queue</h1><p className="muted">Review access requests, private seller documents and shop listings before they become available.</p></section>
     {notice && messages[notice] && <p className="notice" role="status">{messages[notice]}</p>}
     {(roleResult.error || documentResult.error || shopResult.error) && <p className="notice">One or more review queues could not be loaded. Refresh the page.</p>}
 

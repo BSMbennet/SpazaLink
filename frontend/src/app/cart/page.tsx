@@ -1,7 +1,5 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { CartClient } from '@/components/cart-client';
-import { CartLink } from '@/components/cart-link';
 import { createClient } from '@/lib/supabase/server';
 
 export default async function CartPage() {
@@ -12,8 +10,7 @@ export default async function CartPage() {
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', userId).maybeSingle();
 
   return <main className="page-shell">
-    <header className="topbar"><Link href="/" className="brand-mark">Spaza<span>Link</span></Link><nav className="nav-actions"><Link href="/marketplace" className="text-link">Continue shopping</Link><CartLink/></nav></header>
-    <section className="section-heading"><p className="eyebrow">Your order</p><h1>Shopping cart</h1><p className="muted">Each order goes to one local seller.</p></section>
+<section className="section-heading"><p className="eyebrow">Your order</p><h1>Shopping cart</h1><p className="muted">Each order goes to one local seller.</p></section>
     {profile?.role !== 'buyer'
       ? <p className="notice">Please use a buyer account to place orders. Seller accounts can browse the marketplace but cannot check out.</p>
       : <CartClient/>}

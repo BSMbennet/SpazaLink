@@ -6,16 +6,7 @@ const QUICK_FIND = ['Kota', 'Bread', 'Drinks', 'Groceries'];
 export default function HomePage() {
   return (
     <main className="home-shell">
-      <header className="topbar">
-        <Link href="/" className="brand-mark">Spaza<span>Link</span></Link>
-        <nav className="nav-actions" aria-label="Main">
-          <Link href="/marketplace">Browse shops</Link>
-          <Link href="/login">Sign in</Link>
-          <Link href="/sign-up" className="button button-primary">Join SpazaLink</Link>
-        </nav>
-      </header>
-
-      <section className="hero">
+<section className="hero">
         <div className="hero-copy">
           <p className="eyebrow">Thohoyandou · Venda country · Local shops, closer to home</p>
           <h1>Order from the shop around the corner.</h1>

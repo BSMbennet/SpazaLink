@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { saveWhatsAppConsent } from '@/app/actions/whatsapp';
 import { createClient } from '@/lib/supabase/server';
@@ -21,8 +20,7 @@ export default async function NotificationSettingsPage({ searchParams }: PagePro
   };
 
   return <main className="page-shell">
-    <header className="topbar"><Link href="/" className="brand-mark">Spaza<span>Link</span></Link><Link href="/dashboard" className="text-link">Dashboard</Link></header>
-    <section className="section-heading"><p className="eyebrow">Notification preferences</p><h1>WhatsApp updates</h1><p className="muted">Choose whether SpazaLink may send you order updates on WhatsApp.</p></section>
+<section className="section-heading"><p className="eyebrow">Notification preferences</p><h1>WhatsApp updates</h1><p className="muted">Choose whether SpazaLink may send you order updates on WhatsApp.</p></section>
     {notice && notices[notice] && <p className="notice" role="status">{notices[notice]}</p>}
     <section className="auth-card auth-card-wide">
       <form action={saveWhatsAppConsent} className="form-stack">

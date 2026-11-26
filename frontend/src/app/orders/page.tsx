@@ -15,8 +15,7 @@ export default async function OrdersPage() {
     .order('created_at', { ascending: false }).limit(50);
 
   return <main className="page-shell">
-    <header className="topbar"><Link href="/" className="brand-mark">Spaza<span>Link</span></Link><Link href="/marketplace" className="text-link">Shop more</Link></header>
-    <section className="section-heading"><p className="eyebrow">Buyer account</p><h1>Your orders</h1><p className="muted">Track your local shop orders here.</p></section>
+<section className="section-heading"><p className="eyebrow">Buyer account</p><h1>Your orders</h1><p className="muted">Track your local shop orders here.</p></section>
     {error ? <p className="notice">Your orders could not be loaded. Please try again.</p> : orders?.length ? <div className="order-list">{orders.map(order => {
       const shop = Array.isArray(order.shops) ? order.shops[0] : order.shops;
       return <article className="order-card" key={order.id}>
