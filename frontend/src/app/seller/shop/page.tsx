@@ -29,7 +29,19 @@ export default async function SellerShopPage({ searchParams }: PageProps) {
   const { data: shopHours } = shop
     ? await supabase.from('shop_hours').select('weekday,opens_at,closes_at,is_closed').eq('shop_id', shop.id).order('weekday')
     : { data: [] };
-  let shopPhotoUrl: string | null = null;\n  if (shop?.photo_path) {\n    try {\n      shopPhotoUrl = await signedR2ObjectUrl(shop.photo_path);\n    } catch (error) {\n      // A preview deployment may not have R2 credentials. Keep shop editing available\n      // even when the optional current-photo preview cannot be loaded.\n      if (!(error instanceof Error) || error.message !== "Cloudflare R2 environment variables are not configured") {\n        throw error;\n      }\n      console.warn("Shop photo preview is unavailable because R2 is not configured for this deployment.");\n    }\n  }
+  let shopPhotoUrl: string | null = null;
+  if (shop?.photo_path) {
+    try {
+      shopPhotoUrl = await signedR2ObjectUrl(shop.photo_path);
+    } catch (error) {
+      // A preview deployment may not have R2 credentials. Keep shop editing available
+      // even when the optional current-photo preview cannot be loaded.
+      if (!(error instanceof Error) || error.message !== "Cloudflare R2 environment variables are not configured") {
+        throw error;
+      }
+      console.warn("Shop photo preview is unavailable because R2 is not configured for this deployment.");
+    }
+  }
 
   return (
     <main className="page-shell">
