@@ -16,7 +16,7 @@ export default function HomePage() {
 
       <section className="hero">
         <div className="hero-copy">
-          <p className="eyebrow">Now open in Thohoyandou</p>
+          <p className="eyebrow">Thohoyandou · Venda country · Local shops, closer to home</p>
           <h1>Order from the shop around the corner.</h1>
           <p className="hero-lede">Find what you need from local sellers, order in a few taps, then collect it or get it delivered by the seller.</p>
           <div className="hero-actions">
@@ -60,7 +60,7 @@ export default function HomePage() {
       <footer className="site-footer">
         <span>© {new Date().getFullYear()} SpazaLink</span>
         <Link href="/privacy">Privacy notice</Link>
-        <span>Built for the Thohoyandou pilot</span>
+        <span>Rooted in Thohoyandou. Made for local trade.</span>
       </footer>
     </main>
   );
