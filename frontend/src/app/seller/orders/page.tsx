@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { sellerProcessOrder } from '@/app/actions/seller-orders';
 import { createClient } from '@/lib/supabase/server';
