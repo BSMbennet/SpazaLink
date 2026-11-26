@@ -12,6 +12,7 @@ const optOutFix = readFileSync(new URL('../../supabase/migrations/20261126000502
 const rpcHardening = readFileSync(new URL('../../supabase/migrations/20261126000410_phase_f_harden_order_and_whatsapp_rpcs.sql', import.meta.url), 'utf8');
 const whatsappBackend = readFileSync(new URL('../../backend/src/server.ts', import.meta.url), 'utf8');
 const whatsappAction = readFileSync(new URL('../src/app/actions/whatsapp.ts', import.meta.url), 'utf8');
+const notificationLog = readFileSync(new URL('../../supabase/migrations/20261126000653_phase_f_whatsapp_notification_deduplication.sql', import.meta.url), 'utf8');
 
 test('R2 is the storage provider and uses private signed reads', () => {
   assert.ok(r2.includes('S3Client'));
@@ -35,6 +36,9 @@ test('WhatsApp notifications require explicit user opt-in and support opt-out', 
   assert.ok(rpcHardening.includes('alter function public.set_whatsapp_consent(text,boolean) set schema private'));
   assert.ok(rpcHardening.includes('security invoker'));
   assert.ok(whatsappBackend.includes("eq('opted_in', true)"));
+  assert.ok(notificationLog.includes('unique(order_id,recipient_user_id,event_key)'));
+  assert.ok(whatsappBackend.includes('whatsapp_notification_log'));
+  assert.ok(whatsappBackend.includes('Notification does not match the current order state'));
 });
 
 test('Meta WhatsApp webhooks are signature verified and order updates use templates', () => {
