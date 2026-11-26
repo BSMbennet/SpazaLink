@@ -90,7 +90,7 @@ export async function startPaystackOrder(formData: FormData): Promise<
 > {
   const secretKey = process.env.PAYSTACK_SECRET_KEY;
   const siteUrl = process.env.NEXT_PUBLIC_APP_URL;
-  if (!secretKey || !siteUrl) return { ok: false, message: 'Online payments are not configured yet. Please choose cash.' };
+  if (!secretKey) return { ok: false, message: 'Paystack is not connected yet. Online payment is temporarily unavailable. Please choose cash.' };\n  if (!siteUrl) return { ok: false, message: 'Online checkout is missing the SpazaLink website address. Please contact support or choose cash for now.' };
 
   const supabase = await createClient();
   const { data: claimsData, error: claimsError } = await supabase.auth.getClaims();
