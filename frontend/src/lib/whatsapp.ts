@@ -11,7 +11,7 @@ export async function requestWhatsAppOrderNotice(
   const token = data.session?.access_token;
   if (!token) return;
   try {
-    await fetch(apiUrl.replace(/\\/$/, '') + '/v1/notifications/whatsapp/order', {
+    await fetch(apiUrl.replace(/[/]$/, '') + '/v1/notifications/whatsapp/order', {
       method: 'POST',
       headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
       body: JSON.stringify({ orderId, event }),
