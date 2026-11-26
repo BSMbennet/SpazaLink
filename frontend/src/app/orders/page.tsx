@@ -2,6 +2,17 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 
+function orderStatusLabel(status: string, fulfillment: string): string {
+  if (status === 'placed') return 'Awaiting seller';
+  if (status === 'accepted') return 'Confirmed by seller';
+  if (status === 'ready') return fulfillment === 'collection' ? 'Ready for collection' : 'Ready for delivery';
+  if (status === 'collected') return 'Collected';
+  if (status === 'delivered') return 'Delivered';
+  if (status === 'cancelled') return 'Cancelled';
+  if (status === 'refunded') return 'Refunded';
+  return status;
+}
+
 export default async function OrdersPage() {
   const supabase = await createClient();
   const { data: claimsData, error: authError } = await supabase.auth.getClaims();
@@ -20,7 +31,7 @@ export default async function OrdersPage() {
       const shop = Array.isArray(order.shops) ? order.shops[0] : order.shops;
       return <article className="order-card" key={order.id}>
         <div><p className="eyebrow">Order #{order.order_number}</p><h2>{shop?.name ?? 'Local shop'}</h2><p className="muted-small">{new Date(order.created_at).toLocaleString('en-ZA')} · {order.fulfillment === 'collection' ? 'Collection' : 'Seller delivery'}</p></div>
-        <div className="order-card-side"><strong>R {Number(order.total).toFixed(2)}</strong><span className="status-pill">{order.status}</span><Link className="text-link" href={`/orders/${order.id}`}>View order →</Link></div>
+        <div className="order-card-side"><strong>R {Number(order.total).toFixed(2)}</strong><span className="status-pill">{orderStatusLabel(order.status, order.fulfillment)}</span><Link className="text-link" href={`/orders/${order.id}`}>View order →</Link></div>
       </article>;
     })}</div> : <div className="empty-state"><h2>No orders yet.</h2><p>Your placed orders will appear here.</p><Link href="/marketplace" className="button button-primary">Browse shops</Link></div>}
   </main>;
