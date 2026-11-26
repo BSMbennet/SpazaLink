@@ -95,6 +95,8 @@ A separate GitHub Actions workflow has been added on this branch:
 
 The check has not yet run in GitHub Actions. A successful diagnostic is not the same as a working Workers deployment. A later isolated runtime test must exercise Supabase authentication, password reset, cash checkout, order status updates and R2 image uploads using test credentials and a separate test database.
 
+The proposed index statements are recorded separately in [database-indexes-proposed.sql](database-indexes-proposed.sql). They are a review artifact only and have not been applied to the database.
+
 ## Actions still required
 
 1. Enable Supabase leaked-password protection and rerun the security advisor.
