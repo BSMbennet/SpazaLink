@@ -37,7 +37,7 @@ Use `render.yaml` or create a Docker web service with:
 - Docker context: `backend`
 - Dockerfile: `backend/Dockerfile`
 - Health check: `/health`
-- Environment variables: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `FRONTEND_ORIGIN`
+- Environment variables: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `FRONTEND_ORIGIN`, `TRUST_PROXY_HOPS` (default `1`)
 
 The API uses the Supabase publishable/anon key and forwards authenticated callers' access tokens so database Row Level Security remains in force. Never place a service-role key in the browser or public API.
 
@@ -51,6 +51,15 @@ A payment provider has not yet been approved for implementation. Paystack was su
 
 ## Verification status
 
-GitHub Actions run 38 passed dependency installation, all 13 automated tests (5 frontend domain tests and 8 backend/API contract tests), TypeScript checks for both workspaces, ESLint, the Next.js production build, and the backend TypeScript build on commit `ffe0b3b`. This verifies compilation and automated checks, not authenticated live checkout or deployed Render/Vercel services. No lockfile is committed yet. The initial schema SQL file is still missing from GitHub, so a fresh database restore from this repository remains incomplete.
+GitHub Actions run 38 passed dependency installation, all 13 automated tests (5 frontend domain tests and 8 backend/API contract tests), TypeScript checks for both workspaces, ESLint, the Next.js production build, and the backend TypeScript build on commit `ffe0b3b`. This verifies compilation and automated checks, not authenticated live checkout or deployed Render/Vercel services. `package-lock.json` is now committed and CI installs with `npm ci`, so builds are repeatable. The initial schema SQL file is still missing from GitHub, so a fresh database restore from this repository remains incomplete.
 
 The Supabase security advisor reports one intentional warning for the authenticated `SECURITY DEFINER` cash-order RPC. It is not executable by `anon`, checks `auth.uid()` and buyer role, and performs the protected multi-table transaction. The performance advisor also reports 20 unindexed foreign keys and two overlapping permissive read-policy pairs; these should be optimized before pilot traffic. Unused-index notices are expected while the tables are empty.
+
+## Security controls
+
+- **Headers (frontend):** Content-Security-Policy, HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy` on every page (`frontend/next.config.ts`). The policy still allows inline scripts because Next.js needs them to start; a nonce-based policy is the next step.
+- **Uploads:** files are accepted only if their real content (first bytes) is a JPEG, PNG, WebP or PDF and matches the declared type. Shop and product photos are resized to at most 960 px, saved as WebP and stripped of GPS and other metadata. Verification PDFs download instead of opening in the reviewer's browser.
+- **Redirects and sign in:** `?next=` redirects can only go to a path on this site. Sign in and sign up show generic errors, so they do not reveal whether an email has an account.
+- **API:** only `TRUST_PROXY_HOPS` proxies are trusted, so a forged `X-Forwarded-For` cannot dodge the rate limit. Check `request.ip` in the Render logs; raise the value only if the logged IP is Render's own address. Client errors keep their status (400, 413, 429). Outbound calls to Paystack and WhatsApp time out after 10 s, and a messaging failure cannot fail a finished payment.
+- **Dependencies:** CI runs `npm audit --omit=dev --audit-level=high`; Dependabot proposes weekly updates.
+- **Not covered here:** Supabase RLS policies and the Paystack and WhatsApp live integrations were not re-tested against real services in this change.

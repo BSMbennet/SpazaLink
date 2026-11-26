@@ -1,5 +1,5 @@
-import Fastify, { type FastifyRequest, type FastifyReply } from 'fastify';
-import { createHmac, timingSafeEqual } from 'node:crypto';
+import Fastify, { type FastifyRequest, type FastifyReply, type FastifyError } from 'fastify';
+import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
@@ -22,15 +22,39 @@ const WHATSAPP_WEBHOOK_VERIFY_TOKEN = process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN;
 const META_APP_SECRET = process.env.META_APP_SECRET;
 if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) throw new Error('SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY are required');
 
-const app = Fastify({ logger: true, trustProxy: true, bodyLimit: 1_048_576 });
+// Number of proxies in front of this API (Render's load balancer counts as 1). Trusting every proxy would let a caller
+// fake X-Forwarded-For and dodge the rate limit. Check request.ip in the Render logs and raise this only if needed.
+const TRUST_PROXY_HOPS = Math.max(0, Math.floor(Number(process.env.TRUST_PROXY_HOPS ?? 1)) || 0);
+const OUTBOUND_TIMEOUT_MS = 10_000;
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+const app = Fastify({ logger: true, trustProxy: (_address: string, hop: number) => hop < TRUST_PROXY_HOPS, bodyLimit: 1_048_576 });
 interface RawBodyRequest extends FastifyRequest { rawBody?: Buffer; }
 app.removeContentTypeParser('application/json');
 app.addContentTypeParser('application/json', { parseAs: 'buffer' }, (request, body, done) => {
   const raw = body as Buffer;
   (request as RawBodyRequest).rawBody = raw;
   try { done(null, JSON.parse(raw.toString('utf8'))); }
-  catch (error) { done(error as Error); }
+  catch (error) {
+    // Bad JSON is the caller's mistake, so answer 400 and not 500.
+    (error as Error & { statusCode?: number }).statusCode = 400;
+    done(error as Error);
+  }
 });
+
+/** Escapes % _ and \ so a search term cannot act as a wildcard in an ILIKE pattern. */
+function likeTerm(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim().slice(0, 80);
+  return trimmed ? trimmed.replace(/[\\%_]/g, character => '\\' + character) : null;
+}
+/** Compares two secrets without leaking their length or content through timing. */
+function sameSecret(received: unknown, expected: string | undefined): boolean {
+  if (typeof received !== 'string' || !expected) return false;
+  const a = createHash('sha256').update(received).digest();
+  const b = createHash('sha256').update(expected).digest();
+  return timingSafeEqual(a, b);
+}
 await app.register(helmet);
 await app.register(cors, {
   origin: FRONTEND_ORIGIN ? [FRONTEND_ORIGIN] : false,
@@ -71,18 +95,21 @@ app.get('/v1/me', async (request, reply) => {
   return { user: auth.user, profile: data };
 });
 app.get('/v1/shops', async (request, reply) => {
-  const query = request.query as { area?: string; search?: string };
+  const query = request.query as { area?: unknown; search?: unknown };
   let builder = publicClient().from('shops')
     .select('id, name, description, photo_path, phone, address_text, area, offers_collection, offers_delivery, delivery_fee, verified_at')
     .eq('status', 'active').order('name').limit(50);
-  if (query.area) builder = builder.ilike('area', `%${query.area.slice(0, 80)}%`);
-  if (query.search) builder = builder.ilike('name', `%${query.search.slice(0, 80)}%`);
+  const area = likeTerm(query.area);
+  const search = likeTerm(query.search);
+  if (area) builder = builder.ilike('area', `%${area}%`);
+  if (search) builder = builder.ilike('name', `%${search}%`);
   const { data, error } = await builder;
   if (error) return reply.code(500).send({ error: 'Could not load shops' });
   return { shops: data ?? [] };
 });
 app.get('/v1/shops/:shopId/products', async (request, reply) => {
   const { shopId } = request.params as { shopId: string };
+  if (!UUID_PATTERN.test(shopId)) return reply.code(400).send({ error: 'Invalid shop id' });
   const { data, error } = await publicClient().from('products')
     .select('id, shop_id, category_id, name, description, photo_path, price, stock_quantity')
     .eq('shop_id', shopId).eq('is_active', true).gt('stock_quantity', 0).order('name').limit(100);
@@ -132,10 +159,18 @@ app.post('/v1/webhooks/paystack', async (request, reply) => {
   }
 
   const reference = event.data.reference;
-  const verification = await fetch('https://api.paystack.co/transaction/verify/' + encodeURIComponent(reference), {
-    headers: { Authorization: 'Bearer ' + PAYSTACK_SECRET_KEY },
-    cache: 'no-store',
-  });
+  let verification: Response;
+  try {
+    verification = await fetch('https://api.paystack.co/transaction/verify/' + encodeURIComponent(reference), {
+      headers: { Authorization: 'Bearer ' + PAYSTACK_SECRET_KEY },
+      cache: 'no-store',
+      signal: AbortSignal.timeout(OUTBOUND_TIMEOUT_MS),
+    });
+  } catch (error) {
+    // Paystack retries a failed webhook, so a 502 here is safe and the payment is not lost.
+    request.log.error({ reference, error }, 'Paystack verification request could not be completed');
+    return reply.code(502).send({ error: 'Could not verify payment with provider' });
+  }
   if (!verification.ok) {
     request.log.error({ reference, status: verification.status }, 'Paystack verification request failed');
     return reply.code(502).send({ error: 'Could not verify payment with provider' });
@@ -179,14 +214,20 @@ function serviceSupabase(): SupabaseClient | null {
 
 async function sendWhatsAppText(to: string, body: string): Promise<boolean> {
   if (!WHATSAPP_ACCESS_TOKEN || !WHATSAPP_PHONE_NUMBER_ID || !WHATSAPP_GRAPH_API_VERSION) return false;
-  const response = await fetch('https://graph.facebook.com/' + WHATSAPP_GRAPH_API_VERSION + '/' + WHATSAPP_PHONE_NUMBER_ID + '/messages', {
-    method: 'POST',
-    headers: { Authorization: 'Bearer ' + WHATSAPP_ACCESS_TOKEN, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to, type: 'text', text: { preview_url: false, body } }),
-    cache: 'no-store',
-  });
-  if (!response.ok) app.log.error({ status: response.status }, 'WhatsApp text message failed');
-  return response.ok;
+  try {
+    const response = await fetch('https://graph.facebook.com/' + WHATSAPP_GRAPH_API_VERSION + '/' + WHATSAPP_PHONE_NUMBER_ID + '/messages', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + WHATSAPP_ACCESS_TOKEN, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to, type: 'text', text: { preview_url: false, body } }),
+      cache: 'no-store',
+      signal: AbortSignal.timeout(OUTBOUND_TIMEOUT_MS),
+    });
+    if (!response.ok) app.log.error({ status: response.status }, 'WhatsApp text message failed');
+    return response.ok;
+  } catch (error) {
+    app.log.error({ error }, 'WhatsApp text message could not be sent');
+    return false;
+  }
 }
 
 async function notifyWhatsAppOrder(service: SupabaseClient, orderId: string, eventLabel: string): Promise<void> {
@@ -213,8 +254,12 @@ async function notifyWhatsAppOrder(service: SupabaseClient, orderId: string, eve
       continue;
     }
     const link = (FRONTEND_ORIGIN ?? '').replace(/[/]$/, '') + (isSeller ? '/seller/orders' : '/orders/' + order.id);
-    const response = await fetch('https://graph.facebook.com/' + WHATSAPP_GRAPH_API_VERSION + '/' + WHATSAPP_PHONE_NUMBER_ID + '/messages', {
+    // A messaging failure must never turn a finished payment or order update into an error for the caller.
+    let response: Response;
+    try {
+      response = await fetch('https://graph.facebook.com/' + WHATSAPP_GRAPH_API_VERSION + '/' + WHATSAPP_PHONE_NUMBER_ID + '/messages', {
       method: 'POST',
+      signal: AbortSignal.timeout(OUTBOUND_TIMEOUT_MS),
       headers: { Authorization: 'Bearer ' + WHATSAPP_ACCESS_TOKEN, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         messaging_product: 'whatsapp',
@@ -232,7 +277,11 @@ async function notifyWhatsAppOrder(service: SupabaseClient, orderId: string, eve
         },
       }),
       cache: 'no-store',
-    });
+      });
+    } catch (error) {
+      app.log.error({ error }, 'WhatsApp order template could not be sent');
+      continue;
+    }
     if (!response.ok) app.log.error({ status: response.status }, 'WhatsApp order template delivery failed');
     else {
       const receipt = await response.json() as { messages?: Array<{ id?: string }> };
@@ -243,7 +292,8 @@ async function notifyWhatsAppOrder(service: SupabaseClient, orderId: string, eve
   }
 }
 
-app.post('/v1/notifications/whatsapp/order', async (request, reply) => {
+// This route can trigger messages that cost money, so it has a tighter limit than the rest of the API.
+app.post('/v1/notifications/whatsapp/order', { config: { rateLimit: { max: 20, timeWindow: '1 minute' } } }, async (request, reply) => {
   const auth = await authenticated(request, reply);
   if (!auth) return;
   const body = request.body as { orderId?: string; event?: string };
@@ -281,7 +331,7 @@ app.post('/v1/notifications/whatsapp/order', async (request, reply) => {
 
 app.get('/v1/webhooks/whatsapp', async (request, reply) => {
   const query = request.query as Record<string, string | undefined>;
-  if (query['hub.mode'] === 'subscribe' && query['hub.verify_token'] === WHATSAPP_WEBHOOK_VERIFY_TOKEN && query['hub.challenge']) {
+  if (query['hub.mode'] === 'subscribe' && sameSecret(query['hub.verify_token'], WHATSAPP_WEBHOOK_VERIFY_TOKEN) && query['hub.challenge']) {
     return reply.type('text/plain').send(query['hub.challenge']);
   }
   return reply.code(403).send('Forbidden');
@@ -336,9 +386,14 @@ app.post('/v1/webhooks/whatsapp', async (request, reply) => {
 });
 
 app.setNotFoundHandler((_request, reply) => reply.code(404).send({ error: 'Route not found' }));
-app.setErrorHandler((error, _request, reply) => {
-  app.log.error(error);
-  return reply.code(500).send({ error: 'Unexpected server error' });
+app.setErrorHandler((error: FastifyError, _request, reply) => {
+  // Keep client errors (bad JSON 400, too large 413, rate limit 429) as they are. Only real faults become 500.
+  const code = typeof error.statusCode === 'number' && error.statusCode >= 400 && error.statusCode < 500 ? error.statusCode : 500;
+  if (code === 500) {
+    app.log.error(error);
+    return reply.code(500).send({ error: 'Unexpected server error' });
+  }
+  return reply.code(code).send({ error: code === 429 ? 'Too many requests. Please wait a moment and try again.' : 'Invalid request' });
 });
 try { await app.listen({ port: PORT, host: HOST }); }
 catch (error) { app.log.error(error); process.exit(1); }
