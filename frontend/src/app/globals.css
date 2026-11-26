@@ -473,6 +473,7 @@ img { max-width: 100%; }
 .site-nav-actions form { margin: 0; }
 @media (max-width: 760px) {
   .site-header-inner { flex-wrap: wrap; gap: 0 12px; padding: 8px 16px; }
-  .site-nav { order: 3; width: 100%; justify-content: flex-start; overflow-x: auto; white-space: nowrap; }\n  .site-nav > a:first-child, .site-nav-actions > a:first-child { display: inline-flex; }
+  .site-nav { order: 3; width: 100%; justify-content: flex-start; overflow-x: auto; white-space: nowrap; }
+  .site-nav > a:first-child, .site-nav-actions > a:first-child { display: inline-flex; }
   .site-nav-actions { margin-left: auto; gap: 8px; }
 }
