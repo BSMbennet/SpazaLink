@@ -14,10 +14,10 @@ export async function SiteHeader() {
   }
 
   return (
-    <header className="site-header">
+    <header className="topbar site-header">
       <div className="site-header-inner">
-        <Link href="/" className="brand-mark" aria-label="SpazaLink home">Spaza<span>Link</span></Link>
-        <nav className="site-nav" aria-label="Main navigation">
+        <Link href="/" className="brand-mark">Spaza<span>Link</span></Link>
+        <nav className="nav-actions site-nav" aria-label="Main navigation">
           <Link href="/">Home</Link>
           <Link href="/marketplace">Marketplace</Link>
           {role === 'seller' && <Link href="/seller/shop">My shop</Link>}
@@ -27,17 +27,17 @@ export async function SiteHeader() {
           {role === 'admin' && <Link href="/admin">Admin</Link>}
           {userId && <Link href="/settings/notifications">Notifications</Link>}
         </nav>
-        <div className="site-nav-actions">
+        <div className="nav-actions site-nav-actions">
           <CartLink />
           {userId ? (
             <>
-              <Link href="/dashboard" className="site-account-link">My account</Link>
-              <form action={signOut}><button className="button button-secondary site-signout" type="submit">Sign out</button></form>
+              <Link href="/dashboard">My account</Link>
+              <form action={signOut}><button className="button button-signout" type="submit">Sign out</button></form>
             </>
           ) : (
             <>
-              <Link href="/login" className="site-account-link">Sign in</Link>
-              <Link href="/sign-up" className="button button-primary site-signup">Create account</Link>
+              <Link href="/login">Sign in</Link>
+              <Link href="/sign-up" className="button button-primary">Join SpazaLink</Link>
             </>
           )}
         </div>
