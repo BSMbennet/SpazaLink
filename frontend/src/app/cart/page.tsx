@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation';
 import { CartClient } from '@/components/cart-client';
-import { CartLink } from '@/components/cart-link';
 import { createClient } from '@/lib/supabase/server';
 
 export default async function CartPage() {
