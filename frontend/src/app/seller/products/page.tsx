@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import Image from 'next/image';
 import { redirect } from 'next/navigation';
 import { addProduct, setProductActive, updateProduct } from '@/app/actions/seller';
