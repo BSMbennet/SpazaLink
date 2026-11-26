@@ -23,7 +23,6 @@ export async function placeCashOrder(formData: FormData): Promise<OrderResult> {
 
   const shopId = String(formData.get('shopId') ?? '');
   const fulfillment = String(formData.get('fulfillment') ?? '');
-  const deliveryAddress = String(formData.get('deliveryAddress') ?? '').trim();
   const buyerNote = String(formData.get('buyerNote') ?? '').trim();
   const rawItems = String(formData.get('items') ?? '');
 
@@ -84,7 +83,7 @@ export async function placeCashOrder(formData: FormData): Promise<OrderResult> {
 
 
 
-export async function startPaystackOrder(formData: FormData): Promise<
+export async function startPaystackOrder(_formData: FormData): Promise<
   | { ok: true; checkoutUrl: string }
   | { ok: false; message: string }
 > {
