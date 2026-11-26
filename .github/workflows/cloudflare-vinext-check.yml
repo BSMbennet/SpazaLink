@@ -1,6 +1,14 @@
 name: Cloudflare vinext compatibility check
 
 on:
+  push:
+    branches:
+      - "test/cloudflare-vinext-compatibility"
+    paths:
+      - "frontend/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/cloudflare-vinext-check.yml"
   pull_request:
     paths:
       - "frontend/**"
