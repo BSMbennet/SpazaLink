@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { AddToCartButton } from '@/components/add-to-cart-button';
-import { CartLink } from '@/components/cart-link';
 import { createClient } from '@/lib/supabase/server';
 import { signedR2ObjectUrl } from '@/lib/r2';
 
