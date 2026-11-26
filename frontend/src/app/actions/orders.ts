@@ -162,11 +162,14 @@ export async function startPaystackOrder(formData: FormData): Promise<
         metadata: { order_id: order.order_id, order_number: order.order_number, platform: 'SpazaLink' },
       }),
       cache: 'no-store',
+      // Do not let a slow Paystack hang checkout.
+      signal: AbortSignal.timeout(10_000),
     });
   } catch {
     return { ok: false, message: 'Paystack could not be reached. Order #' + order.order_number + ' is pending payment; please contact support before retrying.' };
   }
-  const payload = await response.json() as { status?: boolean; data?: { authorization_url?: string } };
+  // A gateway error can return a web page instead of JSON, so read it safely.
+  const payload = await response.json().catch(() => ({})) as { status?: boolean; data?: { authorization_url?: string } };
   const checkoutUrl = payload.data?.authorization_url;
   if (!response.ok || !payload.status || !checkoutUrl || !checkoutUrl.startsWith('https://checkout.paystack.com/')) {
     return { ok: false, message: 'Paystack could not start checkout. Order #' + order.order_number + ' is pending payment.' };

@@ -47,11 +47,11 @@ The buyer flow now includes product search, area/category filters, a persistent 
 
 ## Payments and WhatsApp
 
-A payment provider has not yet been approved for implementation. Paystack was suggested for consideration, but payment code remains intentionally absent until confirmed. WhatsApp Cloud API remains a Phase 2 feature.
+**Paystack is the chosen payment provider** (confirmed by the owner on 2026-11-26). Online checkout start and signed-webhook confirmation are implemented; see `docs/phase-f-paystack.md`. An order is shown as paid only after the server verifies the signed Paystack webhook. These flows have not yet been exercised against a Paystack test account from this repository's CI. Known gap: if Paystack cannot be reached after an order is created, the order stays pending payment and the buyer is told to contact support; there is no self-service retry or cancel yet. WhatsApp Cloud API remains a Phase 2 feature.
 
 ## Verification status
 
-GitHub Actions run 38 passed dependency installation, all 13 automated tests (5 frontend domain tests and 8 backend/API contract tests), TypeScript checks for both workspaces, ESLint, the Next.js production build, and the backend TypeScript build on commit `ffe0b3b`. This verifies compilation and automated checks, not authenticated live checkout or deployed Render/Vercel services. `package-lock.json` is now committed and CI installs with `npm ci`, so builds are repeatable. The initial schema SQL file is still missing from GitHub, so a fresh database restore from this repository remains incomplete.
+GitHub Actions run 38 passed dependency installation, the automated test suites for both workspaces, TypeScript checks for both workspaces, ESLint, the Next.js production build, and the backend TypeScript build on commit `ffe0b3b`. This verifies compilation and automated checks, not authenticated live checkout or deployed Render/Vercel services. `package-lock.json` is now committed and CI installs with `npm ci`, so builds are repeatable. The initial schema SQL file is still missing from GitHub, so a fresh database restore from this repository remains incomplete.
 
 The Supabase security advisor reports one intentional warning for the authenticated `SECURITY DEFINER` cash-order RPC. It is not executable by `anon`, checks `auth.uid()` and buyer role, and performs the protected multi-table transaction. The performance advisor also reports 20 unindexed foreign keys and two overlapping permissive read-policy pairs; these should be optimized before pilot traffic. Unused-index notices are expected while the tables are empty.
 
