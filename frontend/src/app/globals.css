@@ -199,3 +199,45 @@ body { color: var(--text); background: var(--bg); font-family: var(--font, ui-ro
   .product-grid { grid-template-columns: 1fr 1fr; }
   .product-placeholder { height: 100px; }
 }
+
+
+/* Button affordance + Thohoyandou/Venda-inspired visual details */
+.button:not(.button-primary):not(.button-secondary):not(.button-quiet):not(.button-danger) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--sign);
+  color: var(--sign-ink);
+  border: 2px solid #dcae2d;
+  box-shadow: 0 3px 0 #b88b19, 0 5px 12px rgb(19 34 27 / .10);
+  text-decoration: none;
+  font-weight: 850;
+}
+.button:not(.button-primary):not(.button-secondary):not(.button-quiet):not(.button-danger):hover {
+  background: #ffda70;
+  color: #211900;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 0 #b88b19, 0 8px 16px rgb(19 34 27 / .12);
+}
+.button:active { transform: translateY(1px); box-shadow: none; }
+.button:focus-visible, a.button:focus-visible { outline: 3px solid var(--sign); outline-offset: 3px; }
+button.button:disabled, .button[aria-disabled="true"] { opacity: .55; cursor: not-allowed; transform: none; box-shadow: none; }
+a.button, button.button { text-decoration: none; }
+.nav-actions a:not(.button) { padding: 10px 2px; font-weight: 750; text-underline-offset: 5px; }
+.nav-actions a:not(.button):hover { color: var(--brand); text-decoration: underline; }
+.chip { color: var(--text); text-decoration: none; box-shadow: 0 2px 0 rgb(19 34 27 / .04); }
+.chip:hover { transform: translateY(-1px); }
+.text-link { display: inline-flex; align-items: center; min-height: 42px; font-weight: 800; text-underline-offset: 4px; }
+.hero-art { border: 1px solid var(--line); }
+.hero-art::after { height: 12px; background: repeating-linear-gradient(90deg, var(--brand-btn) 0 24px, var(--sign) 24px 48px, #c76b45 48px 72px, var(--surface) 72px 96px); }
+.section-heading { position: relative; }
+.section-heading::after { content: ""; display: block; width: 104px; height: 7px; margin-top: 18px; border-radius: 10px; background: repeating-linear-gradient(90deg, var(--brand-btn) 0 16px, var(--sign) 16px 32px, #c76b45 32px 48px, var(--surface-2) 48px 64px); }
+.sell-band { border: 1px solid rgb(255 255 255 / .16); box-shadow: var(--shadow); }
+.product-card, .feature-card, .step { box-shadow: var(--shadow); }
+.product-card { transition: transform .18s ease, box-shadow .18s ease; }
+.product-card:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgb(19 34 27 / .10); }
+@media (max-width: 760px) {
+  .hero-art::after { height: 9px; }
+  .hero-actions .button { width: 100%; }
+  .sell-band .button { width: 100%; }
+}
