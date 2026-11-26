@@ -25,14 +25,11 @@ Run the usability and repeat-order test first. Do not collect commission while s
 
 ### After the pilot: start with a simple seller service fee
 
-A practical first model is a commission on completed orders, not on orders that are rejected or cancelled.
+The selected business model is a 10% commission on the product subtotal of each completed order, not on orders that are rejected or cancelled. The pilot itself stays at 0% so sellers can first see whether SpazaLink brings them useful orders. Review the 10% rate with sellers after the pilot and record any agreed change in writing.
 
-Suggested example only; it is not yet an approved fee:
+Example at the selected 10% rate: if 20 sellers each complete 3 orders a week at an average basket of R80, weekly sales value is R4,800 and SpazaLink's commission would be R480 before operating costs. This is an illustration, not a sales forecast.
 
-- Start at 5% of the product subtotal on each completed order.
-- Review the numbers with sellers after four weeks.
-- Consider moving towards 10% only if the value is clear and sellers agree in writing.
-- Exclude delivery fees from commission unless the seller agreement explicitly says otherwise.
+Exclude delivery fees from commission unless the seller agreement explicitly says otherwise.
 
 For cash orders, the seller receives cash directly from the buyer. Until split payments and seller payouts are built and approved, SpazaLink must not pretend to deduct its fee automatically. Instead:
 1. Record the fee due for each completed order.
