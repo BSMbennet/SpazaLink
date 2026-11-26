@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { reviewRoleRequest, reviewSellerDocument, reviewShop } from '@/app/actions/admin';
 import { createClient } from '@/lib/supabase/server';
