@@ -36,30 +36,34 @@ export default async function SellerShopPage({ searchParams }: PageProps) {
       <header className="topbar"><Link href="/" className="brand-mark">Spaza<span>Link</span></Link><Link href="/dashboard" className="text-link">My account</Link></header>
       <section className="section-heading"><p className="eyebrow">Seller workspace</p><h1>{shop ? 'Your shop details' : 'Set up your shop'}</h1><p className="muted">Add the details buyers need to find and collect from your business.</p></section>
       {message && <p className="notice" role="status">{message}</p>}
-      {shop && <p className="notice">Shop status: <strong>{shop.status}</strong> · Verification: <strong>{shop.verification_status}</strong>. Shops appear in public search only after approval. {shop.verification_notes && <>Review note: {shop.verification_notes}</>}</p>}
-      {shopPhotoUrl && <Image className="seller-shop-photo" src={shopPhotoUrl} alt={shop?.name ? `${shop.name} shop` : 'Shop photo'} width={960} height={480} unoptimized/>}
-      <section className="auth-card auth-card-wide">
-        <form action={saveShop} className="form-stack" encType="multipart/form-data">
-          <label>Shop name<input name="name" required minLength={2} maxLength={100} defaultValue={shop?.name ?? ''}/></label>
-          <label>About your shop<textarea name="description" rows={3} maxLength={500} defaultValue={shop?.description ?? ''}/></label>
-          <label>Shop photo (JPG, PNG or WebP; max 2 MB)<input name="shopPhoto" type="file" accept="image/jpeg,image/png,image/webp"/></label>
-          <label>Contact phone<input name="phone" type="tel" maxLength={30} defaultValue={shop?.phone ?? ''}/></label>
-          <label>Street address or collection instructions<input name="addressText" required minLength={4} maxLength={200} defaultValue={shop?.address_text ?? ''}/></label>
-          <label>Area / neighbourhood<input name="area" required minLength={2} maxLength={80} defaultValue={shop?.area ?? 'Thohoyandou'}/></label>
-          <fieldset><legend>How can customers receive orders?</legend>
-            <label className="consent-row"><input name="offersCollection" type="checkbox" defaultChecked={shop?.offers_collection ?? true}/> Collection from my shop</label>
-            <label className="consent-row"><input name="offersDelivery" type="checkbox" defaultChecked={shop?.offers_delivery ?? false}/> Delivery by my shop</label>
+      {shop && <section className={`shop-status-panel ${shop.status === "active" && shop.verification_status === "approved" ? "shop-status-approved" : ""}`} aria-live="polite"><div><span className="shop-status-label">Shop status</span><strong>{shop.status === "active" ? "Active" : shop.status}</strong></div><div><span className="shop-status-label">Verification</span><strong>{shop.verification_status === "approved" ? "Approved" : shop.verification_status}</strong></div><p>{shop.status === "active" && shop.verification_status === "approved" ? "Your shop is approved and active. Keep your details and opening hours up to date so nearby customers know when and where to find you." : "Your shop will appear in public search once it is approved and active."}</p>{shop.verification_notes && <p className="shop-review-note">Review note: {shop.verification_notes}</p>}</section>}
+      {shopPhotoUrl && <figure className="seller-shop-photo-wrap"><Image className="seller-shop-photo" src={shopPhotoUrl} alt={shop?.name ? `${shop.name} shop` : "Shop photo"} width={960} height={480} unoptimized/><figcaption>Current shop photo</figcaption></figure>}
+      <section className="auth-card auth-card-wide shop-editor">
+        <form action={saveShop} className="form-stack shop-form" encType="multipart/form-data">
+          <div className="shop-form-section"><h2>Basic information</h2><p>Help customers recognise your business and get in touch.</p>
+            <label className="shop-field"><span>Shop name</span><input name="name" required minLength={2} maxLength={100} defaultValue={shop?.name ?? ""}/></label>
+            <label className="shop-field"><span>About your shop</span><textarea name="description" rows={3} maxLength={500} defaultValue={shop?.description ?? ""}/></label>
+            <label className="shop-field"><span>Shop photo <small>JPG, PNG or WebP · max 2 MB</small></span><input name="shopPhoto" type="file" accept="image/jpeg,image/png,image/webp"/></label>
+          </div>
+          <div className="shop-form-section"><h2>Contact and location</h2><p>Share where customers can collect their orders.</p>
+            <label className="shop-field"><span>Contact phone</span><input name="phone" type="tel" maxLength={30} defaultValue={shop?.phone ?? ""} autoComplete="tel"/></label>
+            <label className="shop-field"><span>Street address or collection instructions</span><input name="addressText" required minLength={4} maxLength={200} defaultValue={shop?.address_text ?? ""}/></label>
+            <label className="shop-field"><span>Area / neighbourhood</span><input name="area" required minLength={2} maxLength={80} defaultValue={shop?.area ?? "Thohoyandou"}/></label>
+          </div>
+          <div className="shop-form-section"><h2>Order fulfilment</h2><p>Choose how customers can receive their orders.</p><fieldset className="shop-choice-fieldset"><legend>Available options</legend>
+            <label className="consent-row"><input name="offersCollection" type="checkbox" defaultChecked={shop?.offers_collection ?? true}/> <span>Collection from my shop</span></label>
+            <label className="consent-row"><input name="offersDelivery" type="checkbox" defaultChecked={shop?.offers_delivery ?? false}/> <span>Delivery by my shop</span></label>
           </fieldset>
-          <label>Delivery fee (R)<input name="deliveryFee" type="number" min="0" max="99999" step="0.01" defaultValue={shop?.delivery_fee ?? 0}/></label>
+          <label className="shop-field shop-fee-field"><span>Delivery fee (R)</span><input name="deliveryFee" type="number" min="0" max="99999" step="0.01" defaultValue={shop?.delivery_fee ?? 0}/></label></div>
           <fieldset className="hours-fieldset"><legend>Opening hours</legend>
-            <p className="muted-small">Mark closed days. For open days, set the opening and closing times.</p>
+            <p className="muted-small">Mark closed days. For open days, set the opening and closing times. These hours help customers plan collection.</p>
             {weekdays.map((day, weekday) => {
               const hours = shopHours?.find(item => item.weekday === weekday);
               return <div className="hours-row" key={day}>
                 <strong>{day}</strong>
-                <label className="consent-row"><input name={`hours_${weekday}_closed`} type="checkbox" defaultChecked={hours?.is_closed ?? true}/> Closed</label>
-                <label>Opens<input name={`hours_${weekday}_open`} type="time" defaultValue={hours?.opens_at?.slice(0, 5) ?? '08:00'}/></label>
-                <label>Closes<input name={`hours_${weekday}_close`} type="time" defaultValue={hours?.closes_at?.slice(0, 5) ?? '17:00'}/></label>
+                <label className="consent-row shop-closed-control"><input name={`hours_${weekday}_closed`} type="checkbox" defaultChecked={hours?.is_closed ?? true}/> <span>Closed</span></label>
+                <label><span>Opens</span><input name={`hours_${weekday}_open`} type="time" defaultValue={hours?.opens_at?.slice(0, 5) ?? "08:00"}/></label>
+                <label><span>Closes</span><input name={`hours_${weekday}_close`} type="time" defaultValue={hours?.closes_at?.slice(0, 5) ?? "17:00"}/></label>
               </div>;
             })}
           </fieldset>
