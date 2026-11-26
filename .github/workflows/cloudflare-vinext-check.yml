@@ -1,0 +1,47 @@
+name: Cloudflare vinext compatibility check
+
+on:
+  push:
+    branches:
+      - "test/cloudflare-vinext-compatibility"
+    paths:
+      - "frontend/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/cloudflare-vinext-check.yml"
+  pull_request:
+    paths:
+      - "frontend/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/cloudflare-vinext-check.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vinext-check-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  vinext-check:
+    name: Check Next.js compatibility with vinext
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install locked project dependencies
+        run: npm ci
+
+      - name: Run vinext compatibility diagnostics
+        working-directory: frontend
+        run: npx --yes vinext check
