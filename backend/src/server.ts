@@ -203,6 +203,15 @@ async function notifyWhatsAppOrder(service: SupabaseClient, orderId: string, eve
   for (const consent of consents ?? []) {
     if (!consent.phone_e164) continue;
     const isSeller = consent.user_id === shop.owner_id;
+    const { error: duplicateError } = await service.from('whatsapp_notification_log').insert({
+      order_id: order.id,
+      recipient_user_id: consent.user_id,
+      event_key: eventLabel,
+    });
+    if (duplicateError) {
+      if (duplicateError.code !== '23505') app.log.error({ error: duplicateError }, 'WhatsApp notification could not be recorded');
+      continue;
+    }
     const link = (FRONTEND_ORIGIN ?? '').replace(/[/]$/, '') + (isSeller ? '/seller/orders' : '/orders/' + order.id);
     const response = await fetch('https://graph.facebook.com/' + WHATSAPP_GRAPH_API_VERSION + '/' + WHATSAPP_PHONE_NUMBER_ID + '/messages', {
       method: 'POST',
@@ -225,6 +234,12 @@ async function notifyWhatsAppOrder(service: SupabaseClient, orderId: string, eve
       cache: 'no-store',
     });
     if (!response.ok) app.log.error({ status: response.status }, 'WhatsApp order template delivery failed');
+    else {
+      const receipt = await response.json() as { messages?: Array<{ id?: string }> };
+      const messageId = receipt.messages?.[0]?.id;
+      if (messageId) await service.from('whatsapp_notification_log').update({ provider_message_id: messageId })
+        .eq('order_id', order.id).eq('recipient_user_id', consent.user_id).eq('event_key', eventLabel);
+    }
   }
 }
 
@@ -239,12 +254,26 @@ app.post('/v1/notifications/whatsapp/order', async (request, reply) => {
   const service = serviceSupabase();
   if (!service) return reply.code(503).send({ error: 'WhatsApp notifications are not configured' });
   const { data: order } = await service.from('orders')
-    .select('buyer_id,shops!inner(owner_id)').eq('id', body.orderId).maybeSingle();
+    .select('buyer_id,status,payment_method,payment_status,shops!inner(owner_id)').eq('id', body.orderId).maybeSingle();
   if (!order) return reply.code(404).send({ error: 'Order not found' });
   const relation = order.shops as unknown as { owner_id: string } | Array<{ owner_id: string }>;
   const shop = Array.isArray(relation) ? relation[0] : relation;
-  if (auth.user.id !== order.buyer_id && auth.user.id !== shop?.owner_id) {
-    return reply.code(403).send({ error: 'Order participant access required' });
+  const isBuyer = auth.user.id === order.buyer_id;
+  const isSeller = auth.user.id === shop?.owner_id;
+  if (!isBuyer && !isSeller) return reply.code(403).send({ error: 'Order participant access required' });
+
+  const buyerEvent = body.event === 'Order placed — cash payment due'
+    && isBuyer && order.status === 'placed' && order.payment_method === 'cash';
+  const sellerEvents: Record<string, boolean> = {
+    'Order accepted': order.status === 'accepted',
+    'Order rejected': order.status === 'cancelled',
+    'Order ready for collection or delivery': order.status === 'ready',
+    'Order completed': ['collected','delivered'].includes(order.status),
+    'Cash payment confirmed': order.payment_status === 'cash_confirmed',
+    'Order cancelled': order.status === 'cancelled',
+  };
+  if (!buyerEvent && !(isSeller && sellerEvents[body.event])) {
+    return reply.code(409).send({ error: 'Notification does not match the current order state' });
   }
   await notifyWhatsAppOrder(service, body.orderId, body.event);
   return reply.code(202).send({ accepted: true });
