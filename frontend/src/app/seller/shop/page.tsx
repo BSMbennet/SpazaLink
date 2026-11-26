@@ -61,11 +61,10 @@ export default async function SellerShopPage({ searchParams }: PageProps) {
             <label className="shop-field"><span>Street address or collection instructions</span><input name="addressText" required minLength={4} maxLength={200} defaultValue={shop?.address_text ?? ""}/></label>
             <label className="shop-field"><span>Area / neighbourhood</span><input name="area" required minLength={2} maxLength={80} defaultValue={shop?.area ?? "Thohoyandou"}/></label>
           </div>
-          <div className="shop-form-section"><h2>Order fulfilment</h2><p>Choose how customers can receive their orders.</p><fieldset className="shop-choice-fieldset"><legend>Available options</legend>
-            <label className="consent-row"><input name="offersCollection" type="checkbox" defaultChecked={shop?.offers_collection ?? true}/> <span>Collection from my shop</span></label>
-            <label className="consent-row"><input name="offersDelivery" type="checkbox" defaultChecked={shop?.offers_delivery ?? false}/> <span>Delivery by my shop</span></label>
-          </fieldset>
-          <label className="shop-field shop-fee-field"><span>Delivery fee (R)</span><input name="deliveryFee" type="number" min="0" max="99999" step="0.01" defaultValue={shop?.delivery_fee ?? 0}/></label></div>
+          <div className="shop-form-section"><h2>Order fulfilment</h2><p>During the supervised pilot, customers collect orders from your shop and pay cash when they collect.</p>
+            <div className="consent-row"><span>✓ Collection from my shop (required for the pilot)</span></div>
+            <p className="muted-small">Seller delivery and online payments are paused until the pilot is complete.</p>
+          </div>
           <fieldset className="hours-fieldset"><legend>Opening hours</legend>
             <p className="muted-small">Mark closed days. For open days, set the opening and closing times. These hours help customers plan collection.</p>
             {weekdays.map((day, weekday) => {

@@ -44,7 +44,7 @@ export default async function SellerOrdersPage({ searchParams }: PageProps) {
   };
 
   return <main className="page-shell">
-<section className="section-heading"><p className="eyebrow">Seller workspace</p><h1>Orders</h1><p className="muted">Accept orders, prepare them, and record cash only after handover.</p></section>
+<section className="section-heading"><p className="eyebrow">Seller workspace</p><h1>Orders</h1><p className="muted">Accept orders, prepare them, and record cash only after handover. New pilot orders have a 0% SpazaLink fee; older orders keep their original recorded fee.</p></section>
     {notice && messages[notice] && <p className="notice" role="status">{messages[notice]}</p>}
     {error && <p className="notice">Orders could not be loaded. Please refresh.</p>}
     {!error && (!orders || orders.length === 0) && <section className="auth-card"><h2>No orders yet</h2><p className="muted">New customer orders will appear here.</p></section>}
@@ -59,8 +59,8 @@ export default async function SellerOrdersPage({ searchParams }: PageProps) {
           <div className="order-items">{items.map((item) => <div className="order-item" key={item.id}><span>{item.product_name_snapshot} × {item.quantity}</span><strong>{money(item.line_total)}</strong></div>)}</div>
           <div className="checkout-totals">
             <div><span>Order total</span><strong>{money(order.total)}</strong></div>
-            <div><span>Platform fee (10%)</span><strong>{money(order.platform_fee)}</strong></div>
-            <div><span>Before other costs</span><strong>{money(Number(order.subtotal) - Number(order.platform_fee) + Number(order.delivery_fee))}</strong></div>
+            <div><span>SpazaLink fee (recorded)</span><strong>{money(order.platform_fee)}</strong></div>
+            <div><span>Seller amount before own costs</span><strong>{money(Number(order.subtotal) - Number(order.platform_fee) + Number(order.delivery_fee))}</strong></div>
           </div>
           {order.delivery_address && <p className="muted-small">Deliver to: {order.delivery_address}</p>}
           {order.buyer_note && <p className="muted-small">Buyer note: {order.buyer_note}</p>}

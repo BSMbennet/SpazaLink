@@ -57,20 +57,19 @@ export async function saveShop(formData: FormData) {
   const phone = String(formData.get('phone') ?? '').trim();
   const addressText = String(formData.get('addressText') ?? '').trim();
   const area = String(formData.get('area') ?? '').trim();
-  const offersCollection = formData.get('offersCollection') === 'on';
-  const offersDelivery = formData.get('offersDelivery') === 'on';
-  const rawFee = String(formData.get('deliveryFee') ?? '0').trim();
-  const deliveryFee = Number(rawFee);
+  // Pilot policy is enforced on the server, not trusted from submitted form fields.
+  const offersCollection = true;
+  const offersDelivery = false;
+  const deliveryFee = 0;
   const photoValue = formData.get('shopPhoto');
   const photoFile = isImageFile(photoValue) ? photoValue : null;
 
   if (name.length < 2 || name.length > 100 || addressText.length < 4 || addressText.length > 200 || area.length < 2 || area.length > 80) {
     message('/seller/shop', 'Enter a shop name, street or collection address, and area within the indicated limits.');
   }
-  if (description.length > 500 || phone.length > 30 || !Number.isFinite(deliveryFee) || deliveryFee < 0 || deliveryFee > 99999) {
-    message('/seller/shop', 'Check the description, phone number and delivery fee.');
+  if (description.length > 500 || phone.length > 30) {
+    message('/seller/shop', 'Check the description and phone number.');
   }
-  if (!offersCollection && !offersDelivery) message('/seller/shop', 'Choose at least one fulfilment option.');
   if (photoFile && (!['image/jpeg', 'image/png', 'image/webp'].includes(photoFile.type) || photoFile.size > 2 * 1024 * 1024)) {
     message('/seller/shop', 'Shop photos must be JPG, PNG or WebP and no larger than 2 MB.');
   }

@@ -8,6 +8,8 @@ type OrderResult =
   | { ok: true; orderId: string; orderNumber: number; total: number }
   | { ok: false; message: string };
 
+const PILOT_ONLINE_PAYMENTS_ENABLED = false;
+
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export async function placeCashOrder(formData: FormData): Promise<OrderResult> {
@@ -21,16 +23,13 @@ export async function placeCashOrder(formData: FormData): Promise<OrderResult> {
 
   const shopId = String(formData.get('shopId') ?? '');
   const fulfillment = String(formData.get('fulfillment') ?? '');
-  const deliveryAddress = String(formData.get('deliveryAddress') ?? '').trim();
   const buyerNote = String(formData.get('buyerNote') ?? '').trim();
   const rawItems = String(formData.get('items') ?? '');
 
-  if (!uuidPattern.test(shopId) || !['collection', 'seller_delivery'].includes(fulfillment)) {
+  if (!uuidPattern.test(shopId) || fulfillment !== 'collection') {
     return { ok: false, message: 'Your checkout details are not valid. Please review your cart.' };
   }
-  if (fulfillment === 'seller_delivery' && (deliveryAddress.length < 4 || deliveryAddress.length > 300)) {
-    return { ok: false, message: 'Enter a delivery address between 4 and 300 characters.' };
-  }
+
   if (buyerNote.length > 500 || rawItems.length > 12000) {
     return { ok: false, message: 'Your note or cart is too long. Please shorten it and try again.' };
   }
@@ -59,8 +58,8 @@ export async function placeCashOrder(formData: FormData): Promise<OrderResult> {
 
   const { data, error } = await supabase.rpc('create_cash_order', {
     p_shop_id: shopId,
-    p_fulfillment: fulfillment,
-    p_delivery_address: fulfillment === 'seller_delivery' ? deliveryAddress : null,
+    p_fulfillment: 'collection',
+    p_delivery_address: null,
     p_buyer_note: buyerNote || null,
     p_items: items,
   });
@@ -88,6 +87,7 @@ export async function startPaystackOrder(formData: FormData): Promise<
   | { ok: true; checkoutUrl: string }
   | { ok: false; message: string }
 > {
+  if (!PILOT_ONLINE_PAYMENTS_ENABLED) return { ok: false, message: 'Online payments are paused during the pilot. Please choose cash when collecting your order.' };
   const secretKey = process.env.PAYSTACK_SECRET_KEY;
   const siteUrl = process.env.NEXT_PUBLIC_APP_URL;
   if (!secretKey) return { ok: false, message: 'Paystack is not connected yet. Online payment is temporarily unavailable. Please choose cash.' };

@@ -13,6 +13,7 @@ export default async function LoginPage({ searchParams }: PageProps) {
       <label>Password<input name="password" type="password" autoComplete="current-password" required /></label>
       <button className="button button-primary" type="submit">Sign in</button>
     </form>
+    <p className="form-foot"><Link href="/forgot-password">Forgot your password?</Link></p>
     <p className="form-foot">New to SpazaLink? <Link href="/sign-up">Create an account</Link></p>
   </section></main>;
 }

@@ -58,3 +58,40 @@ export async function signOut() {
   await supabase.auth.signOut();
   redirect('/');
 }
+
+
+export async function requestPasswordReset(formData: FormData) {
+  const email = String(formData.get('email') ?? '').trim().toLowerCase();
+  if (!email || email.length > 254 || !email.includes('@')) {
+    redirect(messageUrl('/forgot-password', 'Enter a valid email address.'));
+  }
+  const supabase = await createClient();
+  const origin = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/auth/callback?next=/reset-password`,
+  });
+  if (error) {
+    redirect(messageUrl('/forgot-password', error.status === 429
+      ? 'Too many attempts. Please wait a few minutes and try again.'
+      : 'We could not send a reset email right now. Please try again later.'));
+  }
+  // Keep the response generic so the page does not reveal whether an email is registered.
+  redirect(messageUrl('/forgot-password', 'If an account exists for that email, a password reset link will arrive shortly.'));
+}
+
+export async function updatePassword(formData: FormData) {
+  const password = String(formData.get('password') ?? '');
+  if (password.length < 10 || password.length > 72) {
+    redirect(messageUrl('/reset-password', 'Use a password between 10 and 72 characters.'));
+  }
+  const supabase = await createClient();
+  const { data: claimsData, error: claimsError } = await supabase.auth.getClaims();
+  if (claimsError || !claimsData?.claims?.sub) {
+    redirect(messageUrl('/reset-password', 'Open the latest password reset link from your email and try again.'));
+  }
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    redirect(messageUrl('/reset-password', 'Your password could not be updated. Request a new reset link and try again.'));
+  }
+  redirect(messageUrl('/login', 'Your password has been updated. Sign in with your new password.'));
+}
