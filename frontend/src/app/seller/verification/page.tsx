@@ -26,8 +26,7 @@ export default async function SellerVerificationPage({ searchParams }: PageProps
   };
 
   return <main className="page-shell">
-    <header className="topbar"><Link href="/" className="brand-mark">Spaza<span>Link</span></Link><Link href="/dashboard" className="text-link">Dashboard</Link></header>
-    <section className="section-heading"><p className="eyebrow">Seller onboarding</p><h1>Verification documents</h1><p className="muted">Upload only documents needed to verify your seller account. Files are private and visible only to you and authorised SpazaLink administrators.</p></section>
+<section className="section-heading"><p className="eyebrow">Seller onboarding</p><h1>Verification documents</h1><p className="muted">Upload only documents needed to verify your seller account. Files are private and visible only to you and authorised SpazaLink administrators.</p></section>
     {message && messages[message] && <p className="notice" role="status">{messages[message]}</p>}
     <section className="auth-card auth-card-wide">
       <h2>Submit a document</h2>
