@@ -32,6 +32,7 @@ export async function sellerProcessOrder(formData: FormData): Promise<void> {
   if (error) {
     const message = error.message.includes('INVALID_ORDER_STATE_TRANSITION') ? 'stale' :
       error.message.includes('CASH_CONFIRMATION_NOT_ALLOWED') ? 'cash-not-ready' :
+      error.message.includes('ONLINE_PAYMENT_NOT_CONFIRMED') ? 'payment-pending' :
       error.message.includes('SELLER_ACCESS_REQUIRED') ? 'forbidden' : 'failed';
     redirect('/seller/orders?notice=' + message);
   }
