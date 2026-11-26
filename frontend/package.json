@@ -11,13 +11,13 @@
     "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "3.1178.0",
+    "@aws-sdk/s3-request-presigner": "3.1178.0",
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.119.2",
     "next": "16.4.6",
     "react": "19.3.1",
-    "react-dom": "19.3.1",
-    "@aws-sdk/client-s3": "3.840.0",
-    "@aws-sdk/s3-request-presigner": "3.840.0"
+    "react-dom": "19.3.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.3.5",
