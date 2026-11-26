@@ -28,6 +28,7 @@ export default async function SellerOrdersPage({ searchParams }: PageProps) {
     invalid: 'The submitted action was not valid.',
     stale: 'This order has changed. Refresh the page and try again.',
     'cash-not-ready': 'Cash can only be confirmed after collection or delivery is complete.',
+    'payment-pending': 'This online order cannot be accepted until Paystack confirms payment.',
     forbidden: 'You do not have permission to update that order.',
     failed: 'The order could not be updated. Please refresh and try again.',
   };
@@ -55,7 +56,11 @@ export default async function SellerOrdersPage({ searchParams }: PageProps) {
           {order.delivery_address && <p className="muted-small">Deliver to: {order.delivery_address}</p>}
           {order.buyer_note && <p className="muted-small">Buyer note: {order.buyer_note}</p>}
           <div className="form-actions">
-            {order.status === 'placed' && <>
+            {order.status === 'placed' && order.payment_method === 'online' && order.payment_status !== 'paid' && <>
+              <p className="muted-small">Online payment is not confirmed yet. You cannot accept this order until Paystack verification succeeds.</p>
+              <form action={sellerProcessOrder}><input type="hidden" name="orderId" value={order.id}/><input type="hidden" name="action" value="reject"/><button className="button button-quiet" type="submit">Reject & restock</button></form>
+            </>}
+            {order.status === 'placed' && (order.payment_method !== 'online' || order.payment_status === 'paid') && <>
               <form action={sellerProcessOrder}><input type="hidden" name="orderId" value={order.id}/><input type="hidden" name="action" value="accept"/><button className="button" type="submit">Accept order</button></form>
               <form action={sellerProcessOrder}><input type="hidden" name="orderId" value={order.id}/><input type="hidden" name="action" value="reject"/><button className="button button-quiet" type="submit">Reject</button></form>
             </>}
