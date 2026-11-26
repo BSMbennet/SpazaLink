@@ -32,8 +32,7 @@ export default async function SellerProductsPage({ searchParams }: PageProps) {
 
   return (
     <main className="page-shell">
-      <header className="topbar"><Link href="/" className="brand-mark">Spaza<span>Link</span></Link><Link href="/seller/shop" className="text-link">Shop details</Link></header>
-      <section className="section-heading"><p className="eyebrow">{shop.name} · Seller workspace</p><h1>Manage products</h1><p className="muted">Add, edit, pause or remove products. Update stock and prices when they change.</p></section>
+<section className="section-heading"><p className="eyebrow">{shop.name} · Seller workspace</p><h1>Manage products</h1><p className="muted">Add, edit, pause or remove products. Update stock and prices when they change.</p></section>
       {message && <p className="notice" role="status">{message}</p>}
       {shop.status !== 'active' && <p className="notice">Your shop is {shop.status}. Products can be prepared now but will not appear in the public marketplace until the shop is approved.</p>}
       <section className="auth-card auth-card-wide">
