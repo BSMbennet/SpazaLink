@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { signOut } from '@/app/actions/auth';
 import { createClient } from '@/lib/supabase/server';
 
 export default async function DashboardPage() {
