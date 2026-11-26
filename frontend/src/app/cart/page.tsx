@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { CartClient } from '@/components/cart-client';
 import { CartLink } from '@/components/cart-link';
