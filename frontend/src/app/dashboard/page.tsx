@@ -18,21 +18,7 @@ export default async function DashboardPage() {
 
   return (
     <main className="page-shell dashboard-page">
-      <header className="topbar dashboard-topbar">
-        <Link href="/" className="brand-mark">Spaza<span>Link</span></Link>
-        <nav className="dashboard-nav" aria-label="Main navigation">
-          <Link href="/dashboard" aria-current="page">Home</Link>
-          <Link href="/marketplace">Marketplace</Link>
-          {isSeller && <Link href="/seller/shop">My shop</Link>}
-          {isSeller && <Link href="/seller/orders">Orders</Link>}
-          <Link href="/settings/notifications">Notifications</Link>
-        </nav>
-        <form action={signOut}>
-          <button className="button button-signout" type="submit">Sign out</button>
-        </form>
-      </header>
-
-      <section className="dashboard-welcome">
+<section className="dashboard-welcome">
         <div>
           <p className="eyebrow">Your SpazaLink account</p>
           <h1>Hello{profile?.full_name ? `, ${profile.full_name}` : ''}.</h1>
