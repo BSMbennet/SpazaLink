@@ -477,3 +477,261 @@ img { max-width: 100%; }
   .site-nav > a:first-child, .site-nav-actions > a:first-child { display: inline-flex; }
   .site-nav-actions { margin-left: auto; gap: 8px; }
 }
+
+
+/* ==========================================================================
+   Shared quality pass: consistent tokens, contrast, responsive layout and states
+   Keep these tokens as the single source of truth for future screens.
+   ========================================================================== */
+
+:root {
+  /* Spacing follows a compact 4px base / 8px rhythm. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Type scale */
+  --type-xs: 0.8125rem;
+  --type-sm: 0.9rem;
+  --type-base: 1rem;
+  --type-lg: 1.125rem;
+  --type-xl: 1.25rem;
+  --type-2xl: 1.5rem;
+  --type-3xl: clamp(1.875rem, 4vw, 2.5rem);
+
+  /* Shared component dimensions */
+  --content-width: 1120px;
+  --control-height: 48px;
+  --control-radius: 12px;
+  --icon-size: 20px;
+  --icon-stroke: 1.8;
+  --brand-contrast: #ffffff;
+  --success: #176b43;
+  --success-soft: #e7f5ec;
+  --success-line: #b8dfc6;
+  --info-soft: #eaf2fb;
+  --info-ink: #234b73;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark-theme brand surfaces are bright, so use dark foreground text. */
+    --brand-contrast: #082b1d;
+    --success: #7bd6a1;
+    --success-soft: #142c20;
+    --success-line: #28543a;
+    --info-soft: #17283a;
+    --info-ink: #a9c9ed;
+  }
+}
+
+/* Consistent page grid and readable measure */
+.home-shell, .page-shell, .site-header-inner {
+  max-width: var(--content-width);
+}
+.page-shell > section + section { margin-top: var(--space-6); }
+.section-heading { padding-top: clamp(28px, 4vw, 40px); }
+.section-heading h1, .dashboard-welcome h1, .auth-card h1 {
+  line-height: 1.08;
+  text-wrap: balance;
+}
+.muted, .muted-small, .muted-inline { line-height: 1.55; }
+
+/* One button family, including keyboard, disabled and pending states */
+.button {
+  min-height: var(--control-height);
+  border-radius: var(--control-radius);
+  font-size: var(--type-sm);
+  letter-spacing: 0;
+}
+.button-primary {
+  background: var(--brand);
+  color: var(--brand-contrast);
+}
+.button-primary:hover { background: var(--brand-hover); }
+.button:disabled, .button[aria-disabled="true"] {
+  opacity: 0.58;
+  filter: saturate(0.65);
+}
+.button[aria-busy="true"] { cursor: progress; }
+.button[aria-busy="true"]::before {
+  content: "";
+  width: 15px;
+  height: 15px;
+  flex: 0 0 15px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spazalink-spin 0.7s linear infinite;
+}
+@keyframes spazalink-spin { to { transform: rotate(360deg); } }
+
+/* Consistent fields across standard forms and the seller shop editor */
+.form-stack input:not([type="checkbox"]):not([type="radio"]),
+.form-stack select,
+.form-stack textarea,
+.market-filter-form input,
+.market-filter-form select,
+.quantity-control input,
+.hours-row input[type="time"],
+.shop-form .shop-field input:not([type="checkbox"]):not([type="file"]),
+.shop-form .shop-field textarea,
+.shop-form .shop-field input[type="file"] {
+  min-height: var(--control-height);
+  border-radius: var(--control-radius);
+  font-size: var(--type-base);
+}
+.form-stack label, .market-filter-form label, .shop-form .shop-field {
+  color: var(--text);
+  font-size: var(--type-sm);
+  line-height: 1.4;
+}
+input::placeholder, textarea::placeholder { color: var(--muted); opacity: 0.82; }
+input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="true"] {
+  border-color: var(--danger) !important;
+}
+.form-stack input:disabled, .form-stack select:disabled, .form-stack textarea:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Consistent card surfaces and icon geometry */
+.feature-card, .product-card, .order-card, .cart-lines, .auth-card {
+  border-radius: var(--radius-m);
+}
+.feature-icon {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+.feature-icon svg, .icon svg, .button svg, .nav-actions svg {
+  width: var(--icon-size);
+  height: var(--icon-size);
+  flex: 0 0 var(--icon-size);
+  stroke-width: var(--icon-stroke);
+}
+.icon, .feature-icon { display: inline-grid; place-items: center; }
+
+/* Feedback states: use role/class, never colour alone to communicate meaning */
+.notice { border: 1px solid transparent; border-radius: var(--control-radius); }
+.notice[role="alert"], .notice-error {
+  background: var(--danger-soft);
+  border-color: var(--danger-line);
+  color: var(--danger);
+}
+.notice[role="status"] {
+  background: var(--info-soft);
+  border-color: var(--line);
+  color: var(--info-ink);
+}
+.notice-success {
+  background: var(--success-soft);
+  border-color: var(--success-line);
+  color: var(--success);
+}
+.notice-info {
+  background: var(--info-soft);
+  border-color: var(--line);
+  color: var(--info-ink);
+}
+.notice-warning {
+  background: var(--warn-soft);
+  border-color: var(--line);
+  color: var(--warn-ink);
+}
+.empty-state { border-color: var(--line); }
+.loading-state {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  background: var(--surface);
+}
+.skeleton {
+  min-height: 14px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--surface-2), var(--line), var(--surface-2));
+  background-size: 200% 100%;
+  animation: spazalink-shimmer 1.4s ease-in-out infinite;
+}
+.skeleton-title { width: 55%; min-height: 22px; }
+.skeleton-copy { width: 82%; }
+.skeleton-copy-short { width: 48%; }
+@keyframes spazalink-shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+
+/* Navigation remains scrollable on small screens without shrinking tap targets */
+.site-nav a, .site-nav-actions > a:not(.button), .site-nav-actions button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+.site-nav a { padding-inline: var(--space-2); }
+.site-nav a:focus-visible, .site-nav-actions a:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 3px;
+}
+.site-nav-actions form { display: flex; align-items: center; }
+.button-signout { min-height: 44px; }
+
+/* Tablet: preserve comfortable card widths and avoid squeezed form controls */
+@media (min-width: 761px) and (max-width: 1024px) {
+  .home-shell, .page-shell { padding-inline: 24px; }
+  .product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .market-filter-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hours-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Mobile: full-width controls, predictable gutters and no horizontal page overflow */
+@media (max-width: 760px) {
+  .site-header-inner { min-height: 64px; }
+  .site-nav { gap: 4px; padding-block: 4px 8px; scrollbar-width: thin; }
+  .site-nav a { min-height: 44px; padding-inline: 10px; }
+  .site-nav-actions { gap: 6px; }
+  .site-nav-actions > a:not(.button) { padding-inline: 6px; }
+  .section-heading { padding-top: 28px; }
+  .market-filter-form { gap: var(--space-3); }
+  .market-filter-form .button { width: 100%; }
+  .cart-lines { padding: 14px; }
+  .empty-state { padding: 36px 18px; }
+}
+@media (max-width: 420px) {
+  .home-shell, .page-shell { padding-inline: 14px; }
+  .site-header-inner { padding-inline: 14px; }
+  .brand-mark { font-size: 1.28rem; }
+  .nav-actions { font-size: var(--type-xs); }
+  .site-nav-actions .button { padding-inline: 10px; }
+  .product-grid { gap: 10px; }
+  .product-content { padding: 10px; }
+  .product-content h2 { font-size: 0.98rem; }
+  .button { padding-inline: 14px; }
+  .auth-card { padding: 22px 16px; }
+}
+
+/* Honour user preferences for less motion and larger text */
+@media (prefers-reduced-motion: reduce) {
+  .button[aria-busy="true"]::before, .skeleton {
+    animation: none !important;
+  }
+}
+@media (prefers-contrast: more) {
+  :root { --line: currentColor; }
+  .button-secondary { border-width: 2px; }
+  .status-pill, .chip { border: 1px solid currentColor; }
+}
+
+/* Dark theme action band follows the contrast-safe foreground token. */
+.sell-band { color: var(--brand-contrast); }
+.sell-band p { color: inherit; }
+.loading-label { margin: 0; color: var(--muted); font-weight: 700; }
