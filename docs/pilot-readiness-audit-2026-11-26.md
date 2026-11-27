@@ -1,6 +1,6 @@
 # Pilot readiness audit — 26 November 2026
 
-This is a read-only audit of the connected Supabase production project and Cloudflare account. No database settings, production hosting, secrets, Worker scripts or domains were changed.
+This is a read-only audit of the connected Supabase production project. No database settings, production hosting, secrets or domains were changed.
 
 ## Supabase production snapshot
 
@@ -78,22 +78,7 @@ Still required:
 - Confirm admin-only verification and webhook data stays private.
 - Test two buyers competing for the last product unit.
 
-## Cloudflare account snapshot
-
-The connected Cloudflare account already contains a Worker named `agriconnect-image-upload` and an existing Workers subdomain `agriconnect-vhembe-2026`. These are unrelated existing resources and were left untouched. No SpazaLink Worker or new subdomain was created.
-
-The repository's Next.js frontend is version 16.4.6. It uses App Router, Server Actions, Supabase cookie/session proxy logic, Cloudflare R2 via the AWS S3 SDK, and `sharp` for server-side image resizing. Sharp is the main runtime compatibility risk to test on Workers.
-
-## Automated compatibility test added
-
-A separate GitHub Actions workflow has been added on this branch:
-- `.github/workflows/cloudflare-vinext-check.yml`
-- Installs the existing locked dependencies using `npm ci`.
-- Runs `npx --yes vinext check` from the frontend directory.
-- Runs only on relevant pull-request changes or manual workflow dispatch.
-- Does not deploy a Worker, change production routing, or access production secrets.
-
-The check has not yet run in GitHub Actions. A successful diagnostic is not the same as a working Workers deployment. A later isolated runtime test must exercise Supabase authentication, password reset, cash checkout, order status updates and R2 image uploads using test credentials and a separate test database.
+## Proposed database indexes
 
 The proposed index statements are recorded separately in [database-indexes-proposed.sql](database-indexes-proposed.sql). They are a review artifact only and have not been applied to the database.
 
@@ -104,10 +89,8 @@ The proposed index statements are recorded separately in [database-indexes-propo
 3. Generate a timestamped migration with the Supabase CLI for the 20 missing foreign-key indexes, test it on a separate database, then apply it to production after review.
 4. Review the two overlapping policy pairs and prove equivalent access before changing them.
 5. Complete authenticated RLS and stock-race tests with separate accounts.
-6. Run the vinext workflow and resolve every compatibility issue.
-7. Only then create a dedicated SpazaLink Worker test deployment. Do not reuse the existing Agriconnect Worker or subdomain.
-8. Keep the Fastify API on a suitable non-sleeping host before any real commercial pilot; moving the frontend alone does not solve Render Free sleep.
+6. Keep the Fastify API on a suitable non-sleeping host before any real commercial pilot; moving the frontend alone does not solve Render Free sleep.
 
 ## Conclusion
 
-The production database is healthy and has RLS enabled on every public table, but it is not fully pilot-ready: leaked-password protection is off, database restore history is incomplete, performance findings remain, and authenticated cross-account tests have not been completed. Cloudflare account access is available, but its existing resources are unrelated. The vinext check workflow is now prepared on an isolated branch; no production migration or hosting cutover was performed.
+The production database is healthy and has RLS enabled on every public table, but it is not fully pilot-ready: leaked-password protection is off, database restore history is incomplete, performance findings remain, and authenticated cross-account tests have not been completed.
