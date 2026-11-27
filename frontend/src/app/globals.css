@@ -725,3 +725,8 @@ input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="
   .button-secondary { border-width: 2px; }
   .status-pill, .chip { border: 1px solid currentColor; }
 }
+
+/* Dark theme action band follows the contrast-safe foreground token. */
+.sell-band { color: var(--brand-contrast); }
+.sell-band p { color: inherit; }
+.loading-label { margin: 0; color: var(--muted); font-weight: 700; }
