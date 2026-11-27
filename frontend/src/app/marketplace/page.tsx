@@ -54,7 +54,7 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
       {hasFilters && <Link href="/marketplace" className="text-link">Clear filters</Link>}
     </form>
     {error
-      ? <p className="notice">We could not load products. Check your network and try again.</p>
+      ? <p className="notice notice-error" role="alert">We could not load products. Check your network and try again.</p>
       : productsWithPhotos.length
         ? <>
           <p className="results-line" aria-live="polite">{productsWithPhotos.length} {productsWithPhotos.length === 1 ? 'product' : 'products'} found</p>
