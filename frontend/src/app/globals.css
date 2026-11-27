@@ -627,7 +627,12 @@ input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="
   border-color: var(--danger-line);
   color: var(--danger);
 }
-.notice[role="status"], .notice-success {
+.notice[role="status"] {
+  background: var(--info-soft);
+  border-color: var(--line);
+  color: var(--info-ink);
+}
+.notice-success {
   background: var(--success-soft);
   border-color: var(--success-line);
   color: var(--success);
