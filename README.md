@@ -39,7 +39,7 @@ Run the API separately with `npm run dev:api`.
 
 ## Frontend and API deployment
 
-The current frontend is configured for Vercel with Root Directory `frontend`. The Fastify API uses the root `render.yaml` blueprint or `backend/Dockerfile`.
+The frontend is configured for **Vercel** with Root Directory `frontend`. The Fastify API uses the root `render.yaml` blueprint or `backend/Dockerfile`.
 
 Required frontend environment variables include:
 - `NEXT_PUBLIC_SUPABASE_URL`
@@ -49,7 +49,7 @@ Required frontend environment variables include:
 
 The API uses the Supabase publishable key and forwards authenticated callers' access tokens so database Row Level Security remains in force. Never place a Supabase service-role key in the browser or public API.
 
-**Hosting warning:** Vercel Hobby is limited to personal/non-commercial use. Render Free services sleep after inactivity and are not intended for production. Keep these free deployments for development or supervised rehearsals only; do not use them as the basis for a real commercial pilot until an eligible hosting arrangement is confirmed. The Cloudflare alternative is under assessment in [the hosting readiness note](docs/cloudflare-hosting-readiness.md); it has not been deployed.
+**Hosting warning:** Vercel Hobby is limited to personal/non-commercial use. Render Free services sleep after inactivity and are not intended for production. Keep these free deployments for development or supervised rehearsals only; confirm an eligible hosting arrangement before a real commercial pilot.
 
 ## Marketplace and cash orders
 
@@ -91,5 +91,4 @@ The code checks passed on the PR #17 pilot-mode change: 55 automated tests, Type
 ## Key project documents
 
 - [Pilot mode and revenue plan](docs/pilot-mode-and-revenue-plan.md)
-- [Cloudflare hosting readiness](docs/cloudflare-hosting-readiness.md)
 - [Paystack implementation notes](docs/phase-f-paystack.md)
