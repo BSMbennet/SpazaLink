@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { Icon } from '@/components/icon';
 import { createClient } from '@/lib/supabase/server';
 
 export default async function DashboardPage() {
@@ -31,7 +32,7 @@ export default async function DashboardPage() {
 
       <section className="dashboard-grid" aria-label="Your account shortcuts">
         <article className="feature-card dashboard-card dashboard-card-highlight">
-          <span className="feature-icon">⌕</span>
+          <span className="feature-icon"><Icon name="search" /></span>
           <h2>Find local shops</h2>
           <p>Browse products from participating sellers near you.</p>
           <Link href="/marketplace" className="button button-primary">Open marketplace</Link>
@@ -39,7 +40,7 @@ export default async function DashboardPage() {
 
         {profile?.role === 'buyer' && (
           <article className="feature-card dashboard-card">
-            <span className="feature-icon">▤</span>
+            <span className="feature-icon"><Icon name="list" /></span>
             <h2>Your orders</h2>
             <p>Check order progress and cash payment confirmation.</p>
             <Link href="/orders" className="button button-secondary">View my orders</Link>
@@ -47,7 +48,7 @@ export default async function DashboardPage() {
         )}
 
         <article className="feature-card dashboard-card">
-          <span className="feature-icon">▣</span>
+          <span className="feature-icon"><Icon name="shop" /></span>
           <h2>Seller setup</h2>
           <p>Seller and agent accounts are activated after an administrator review.</p>
           {roleRequests?.length ? (
@@ -67,7 +68,7 @@ export default async function DashboardPage() {
 
         {isSeller && (
           <article className="feature-card dashboard-card dashboard-card-highlight">
-            <span className="feature-icon">▤</span>
+            <span className="feature-icon"><Icon name="list" /></span>
             <h2>Seller workspace</h2>
             <p>Update your shop, manage products and keep track of stock and orders.</p>
             <div className="dashboard-card-actions">
@@ -80,7 +81,7 @@ export default async function DashboardPage() {
 
         {profile?.role === 'admin' && (
           <article className="feature-card dashboard-card">
-            <span className="feature-icon">✓</span>
+            <span className="feature-icon"><Icon name="check" /></span>
             <h2>Administration</h2>
             <p>Review seller and agent applications, private documents and shop listings.</p>
             <Link href="/admin" className="button button-primary">Open review queue</Link>

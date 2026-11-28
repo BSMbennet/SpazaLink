@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   manifest: '/manifest.webmanifest',
 };
 
-export const viewport: Viewport = { themeColor: '#155e45', width: 'device-width', initialScale: 1 };
+export const viewport: Viewport = { themeColor: '#0b1424', width: 'device-width', initialScale: 1 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return <html lang="en"><body><CartProvider><SiteHeader />{children}</CartProvider></body></html>;

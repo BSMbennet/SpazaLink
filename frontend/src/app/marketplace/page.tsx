@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { AddToCartButton } from '@/components/add-to-cart-button';
+import { Icon } from '@/components/icon';
 import { createClient } from '@/lib/supabase/server';
 import { signedR2ObjectUrl } from '@/lib/r2';
 
@@ -75,6 +76,6 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
             </article>;
           })}</div>
         </>
-        : <div className="empty-state"><span className="feature-icon" aria-hidden="true">⌕</span><h2>{hasFilters ? 'No products match your search.' : 'Sellers are getting their shops ready.'}</h2><p>{hasFilters ? 'Try a different product name, area or category.' : 'Products will show here as soon as pilot sellers publish them. Check back soon.'}</p>{hasFilters && <p style={{ marginTop: 16 }}><Link href="/marketplace" className="button button-secondary">Clear filters</Link></p>}</div>}
+        : <div className="empty-state"><span className="feature-icon"><Icon name="search" /></span><h2>{hasFilters ? 'No products match your search.' : 'Sellers are getting their shops ready.'}</h2><p>{hasFilters ? 'Try a different product name, area or category.' : 'Products will show here as soon as pilot sellers publish them. Check back soon.'}</p>{hasFilters && <p style={{ marginTop: 16 }}><Link href="/marketplace" className="button button-secondary">Clear filters</Link></p>}</div>}
   </main>;
 }

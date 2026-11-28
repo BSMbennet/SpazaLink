@@ -3,46 +3,50 @@
 /* ==========================================================================
    SpazaLink design system
    One stylesheet, built for cheap phones: system fonts (nothing to download),
-   large touch targets, high contrast, light and dark themes.
+   large touch targets, high contrast. Navy grid page with light cards.
    ========================================================================== */
 
 :root {
-  color-scheme: light dark;
+  color-scheme: dark;
 
-  /* Brand */
-  --brand: #0f6b4b;
-  --brand-hover: #0a5239;
-  --brand-soft: #e1f1e7;
-  --sign: #ffc93c;
-  --sign-hover: #ffd666;
-  --sign-ink: #2b2100;
-  --clay: #c76b45;
+  /* Page: deep navy with a grid. Cards switch back to light (see "Light cards"). */
+  --blue: #2563eb;
+  --blue-hover: #1d4fd0;
+  --orange: #ff7a3d;
+  --orange-hover: #ff9160;
+  --grid-line: rgb(148 180 255 / 0.12);
+  --grid-size: 32px;
 
-  /* Surfaces and text */
-  --bg: #f4f7f2;
-  --surface: #ffffff;
-  --surface-2: #eaf1e8;
-  --text: #13221b;
-  --muted: #54645b;
-  --line: #dbe4d9;
+  --brand: #8fb6ff;
+  --brand-hover: #b3ceff;
+  --brand-soft: #172c55;
+  --sign: var(--orange);
+  --sign-hover: var(--orange-hover);
+  --sign-ink: #1c0d04;
 
-  /* Feedback */
-  --danger: #a82f26;
-  --danger-soft: #fdeceb;
-  --danger-line: #f0c3bf;
-  --warn-soft: #fff4dc;
-  --warn-ink: #7a4a00;
+  --bg: #0b1424;
+  --surface: #121f36;
+  --surface-2: #192a47;
+  --text: #eef4ff;
+  --muted: #a9b8d4;
+  --line: #2a3d60;
 
-  /* Shape and depth */
+  --danger: #ff9188;
+  --danger-soft: #35191f;
+  --danger-line: #6b2f36;
+  --warn-soft: #33270f;
+  --warn-ink: #ffd27a;
+  --ok: #3ddc97;
+
   --radius-s: 10px;
   --radius-m: 14px;
   --radius-l: 22px;
-  --shadow-s: 0 1px 2px rgb(19 34 27 / 0.06);
-  --shadow-m: 0 1px 2px rgb(19 34 27 / 0.06), 0 8px 24px rgb(19 34 27 / 0.07);
-  --ring: 0 0 0 3px var(--bg), 0 0 0 6px var(--brand);
+  --shadow-s: 0 1px 2px rgb(0 0 0 / 0.35);
+  --shadow-m: 0 14px 34px rgb(2 8 20 / 0.45);
+  --ring: 0 0 0 3px #0b1424, 0 0 0 6px #8fb6ff;
 
   /* Type: system fonts only, so there is no font download on slow data */
-  --font: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 
   /* Older names still used by some rules */
   --ink: var(--text);
@@ -52,28 +56,7 @@
   --white: var(--surface);
   --shadow: var(--shadow-m);
 
-  --stripe: repeating-linear-gradient(90deg, var(--brand) 0 22px, var(--sign) 22px 44px, var(--clay) 44px 66px, var(--surface-2) 66px 88px);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --brand: #5ccf9f;
-    --brand-hover: #7bdcb3;
-    --brand-soft: #173627;
-    --bg: #0c1511;
-    --surface: #131f19;
-    --surface-2: #1b2b23;
-    --text: #e9f2ec;
-    --muted: #9fb2a7;
-    --line: #24362d;
-    --danger: #ff8d82;
-    --danger-soft: #2f1816;
-    --danger-line: #5a2a26;
-    --warn-soft: #2e2410;
-    --warn-ink: #f3c978;
-    --shadow-s: 0 1px 2px rgb(0 0 0 / 0.4);
-    --shadow-m: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.3);
-  }
+  --stripe: linear-gradient(90deg, var(--blue), var(--orange));
 }
 
 /* --- Base ---------------------------------------------------------------- */
@@ -83,11 +66,24 @@ html { min-width: 320px; background: var(--bg); -webkit-text-size-adjust: 100%; 
 body {
   margin: 0;
   color: var(--text);
-  background: var(--bg);
+  background: transparent;
   font-family: var(--font);
   font-size: 1rem;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
+}
+/* Grid and two soft glows. Pure CSS: no image download, and fixed so it does not repaint on scroll. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--grid-line) 1px, transparent 1px) 0 0 / var(--grid-size) var(--grid-size),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 0 0 / var(--grid-size) var(--grid-size),
+    radial-gradient(ellipse 70% 50% at 92% 0%, rgb(37 99 235 / 0.38), transparent 70%),
+    radial-gradient(ellipse 60% 45% at 0% 100%, rgb(255 122 61 / 0.2), transparent 70%);
 }
 h1, h2, h3, p { margin-top: 0; }
 h1, h2, h3 { font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; text-wrap: balance; }
@@ -172,8 +168,8 @@ img { max-width: 100%; }
 .button:active { transform: translateY(1px); box-shadow: none; }
 .button:focus-visible { box-shadow: var(--ring); }
 .button:disabled, .button[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; transform: none; }
-.button-primary { background: var(--brand); color: #fff; }
-.button-primary:hover { background: var(--brand-hover); }
+.button-primary { background: var(--blue); color: #fff; }
+.button-primary:hover { background: var(--blue-hover); }
 .button-secondary { background: transparent; border-color: var(--brand); color: var(--brand); box-shadow: none; }
 .button-secondary:hover { background: var(--brand-soft); }
 .button-quiet { min-height: 44px; padding: 0 16px; background: var(--surface-2); color: var(--brand); box-shadow: none; }
@@ -205,7 +201,7 @@ img { max-width: 100%; }
 .step h3 { margin-bottom: 6px; font-size: 1.1rem; }
 .step p { margin: 0; color: var(--muted); font-size: 0.95rem; }
 
-.sell-band { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 36px; padding: 28px; border-radius: var(--radius-l); background: var(--brand); color: #fff; box-shadow: var(--shadow-m); }
+.sell-band { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 36px; padding: 28px; border-radius: var(--radius-l); background: var(--blue); color: #fff; box-shadow: var(--shadow-m); }
 .sell-band h2 { margin: 0 0 6px; font-size: 1.5rem; }
 .sell-band p { max-width: 32rem; margin: 0; opacity: 0.92; }
 .sell-band .button { background: var(--sign); color: var(--sign-ink); }
@@ -213,7 +209,7 @@ img { max-width: 100%; }
 
 /* --- Sign in and sign up -------------------------------------------------------- */
 
-.auth-shell { display: grid; place-items: center; min-height: calc(100vh - 76px); padding: 28px 20px; background: radial-gradient(circle at 80% 0%, var(--surface-2), transparent 45%), var(--bg); }
+.auth-shell { display: grid; place-items: center; min-height: calc(100vh - 76px); padding: 28px 20px; }
 .auth-card { width: min(100%, 440px); padding: 34px; border: 1px solid var(--line); border-radius: 24px; background: var(--surface); box-shadow: var(--shadow-m); }
 .auth-card-wide { width: min(100%, 540px); }
 .auth-card h1 { margin-bottom: 8px; font-size: 2.2rem; }
@@ -519,18 +515,6 @@ img { max-width: 100%; }
   --info-ink: #234b73;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Dark-theme brand surfaces are bright, so use dark foreground text. */
-    --brand-contrast: #082b1d;
-    --success: #7bd6a1;
-    --success-soft: #142c20;
-    --success-line: #28543a;
-    --info-soft: #17283a;
-    --info-ink: #a9c9ed;
-  }
-}
-
 /* Consistent page grid and readable measure */
 .home-shell, .page-shell, .site-header-inner {
   max-width: var(--content-width);
@@ -735,3 +719,64 @@ input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="
 .sell-band { color: var(--brand-contrast); }
 .sell-band p { color: inherit; }
 .loading-label { margin: 0; color: var(--muted); font-weight: 700; }
+/* ==========================================================================
+   Light cards
+   Anything a person reads or fills in sits on a light card, for contrast.
+   The tokens are redefined here, so every component inside follows.
+   ========================================================================== */
+
+.product-card, .step, .auth-card, .feature-card, .cart-lines, .order-card,
+.empty-state, .market-filter-form, .shop-status-panel, .dashboard-help {
+  color-scheme: light;
+  --brand: #1d4fd0;
+  --brand-hover: #173fa8;
+  --brand-soft: #e5edff;
+  --surface: #ffffff;
+  --surface-2: #eef3fc;
+  --text: #101b2d;
+  --muted: #4d5b73;
+  --line: #d5deec;
+  --danger: #a82f26;
+  --danger-soft: #fdeceb;
+  --danger-line: #f0c3bf;
+  --warn-soft: #fff1d6;
+  --warn-ink: #744500;
+  --ink: var(--text);
+  --green: var(--brand);
+  --green-dark: var(--brand-hover);
+  --white: var(--surface);
+  color: var(--text);
+  background-color: var(--surface);
+  border-color: var(--line);
+  box-shadow: var(--shadow-m);
+}
+.market-filter-form, .dashboard-help { background-color: var(--surface-2); }
+.empty-state { border-style: solid; }
+
+/* The header stays solid enough to read over the grid. */
+.topbar { background: rgb(11 20 36 / 0.9); }
+.brand-mark span { color: var(--orange); }
+
+/* Sign out is a secondary action, so it must not look like the main one. */
+.button-signout { min-height: 44px; padding: 0 14px; background: transparent; border-color: var(--line); color: var(--text); box-shadow: none; }
+.button-signout:hover { background: var(--surface-2); }
+
+.section-heading::after { height: 5px; }
+.feature-icon svg { width: 24px; height: 24px; }
+
+/* The page is always navy, so these shared tokens are set for it, then reset inside light cards. */
+:root {
+  --brand-contrast: #0b1424;
+  --success: #7bd6a1; --success-soft: #142c20; --success-line: #28543a;
+  --info-soft: #172c55; --info-ink: #cfe0ff;
+}
+.product-card, .step, .auth-card, .feature-card, .cart-lines, .order-card,
+.empty-state, .market-filter-form, .shop-status-panel, .dashboard-help, .loading-state {
+  --brand-contrast: #ffffff;
+  --success: #176b43; --success-soft: #e7f5ec; --success-line: #b8dfc6;
+  --info-soft: #eaf2fb; --info-ink: #234b73;
+}
+.loading-state { color-scheme: light; --surface: #ffffff; --surface-2: #eef3fc; --line: #d5deec; --muted: #4d5b73; --text: #101b2d; color: var(--text); }
+.button-primary { background: var(--blue); color: #fff; }
+.button-primary:hover { background: var(--blue-hover); }
+.sell-band, .sell-band p { color: #fff; }
